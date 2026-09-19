@@ -1,0 +1,4787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Start-Rite Schools Mathematics Assessment</title>
+
+  <!-- =========================================================
+       TAILWIND
+       ========================================================= -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- =========================================================
+       REACT
+       ========================================================= -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+  <!-- =========================================================
+       BABEL
+       ========================================================= -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- =========================================================
+       KATEX
+       ========================================================= -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"
+  />
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+
+  <!-- =========================================================
+       FIREBASE
+       ========================================================= -->
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f8fafc;
+      color: #1e293b;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font-family: inherit;
+    }
+
+    .math-content .katex {
+      font-size: 1.05em;
+    }
+
+    .question-card {
+      transition:
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
+    }
+
+    .question-card:hover {
+      box-shadow: 0 5px 20px rgba(15, 23, 42, 0.07);
+    }
+
+    .option-row {
+      transition:
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+    }
+
+    .option-row:hover {
+      background: #f8fafc;
+    }
+
+    .option-row.selected {
+      background: #eff6ff;
+      border-color: #2563eb;
+    }
+
+    .sidebar-item {
+      transition: all 0.15s ease;
+    }
+
+    .sidebar-item:hover {
+      background: #eff6ff;
+    }
+
+    .sidebar-item.active {
+      background: #dbeafe;
+      color: #123f73;
+      font-weight: 700;
+    }
+
+    .progress-bar {
+      transition: width 0.25s ease;
+    }
+
+    .scroll-table {
+      overflow-x: auto;
+    }
+
+    .scroll-table table {
+      min-width: 850px;
+    }
+
+    .admin-textarea {
+      min-height: 100px;
+    }
+
+    @media print {
+      .no-print {
+        display: none !important;
+      }
+
+      body {
+        background: white !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const {
+      useState,
+      useEffect,
+      useMemo,
+      useRef
+    } = React;
+
+    /* =========================================================
+       FIREBASE CONFIGURATION
+       ========================================================= */
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCChOwk1DICcjZYVnyVCF6q8mOkVzsZAYQ",
+      authDomain: "start-rite-mathematics-ap.firebaseapp.com",
+      projectId: "start-rite-mathematics-ap",
+      storageBucket: "start-rite-mathematics-ap.firebasestorage.app",
+      messagingSenderId: "78790868764",
+      appId: "1:78790868764:web:5861cead9b5ec9290444d9",
+      measurementId: "G-2XL9M2QB9M"
+    };
+
+    let firebaseReady = false;
+    let db = null;
+    let auth = null;
+    let storage = null;
+
+    try {
+      firebase.initializeApp(firebaseConfig);
+
+      db = firebase.firestore();
+      auth = firebase.auth();
+      storage = firebase.storage();
+
+      firebaseReady = true;
+
+      console.log("Firebase initialised successfully.");
+    } catch (error) {
+      console.error("Firebase initialisation error:", error);
+    }
+
+    /* =========================================================
+       CONSTANTS
+       ========================================================= */
+
+    const ASSESSMENT_ID =
+      "fractions-decimals-percentages-i";
+
+    const ALLOWED_ADMINS = [
+      "emmanueliwe@startriteschools.com.ng",
+      "collinstyohemba@startriteschools.com.ng",
+      "oguduguabdool@startriteschools.com.ng"
+    ];
+
+    const CLASS_OPTIONS = [
+      "Year 10A",
+      "Year 10B",
+      "Year 10C"
+    ];
+
+    const OPTION_LETTERS = [
+      "A",
+      "B",
+      "C",
+      "D"
+    ];
+
+    /* =========================================================
+       ADMIN CHECK
+       ========================================================= */
+
+    function isAllowedAdmin(email) {
+      if (!email) return false;
+
+      return ALLOWED_ADMINS.includes(
+        email.trim().toLowerCase()
+      );
+    }
+
+    /* =========================================================
+       DEFAULT CONFIG
+       ========================================================= */
+
+    const defaultConfig = {
+      schoolName: "START-RITE SCHOOLS",
+      title: "MATHEMATICS ASSESSMENT",
+      subtitle:
+        "FRACTIONS, DECIMALS AND PERCENTAGES I",
+      instructions:
+        "Answer all 20 questions. Select one answer for each question. You must answer every question before submitting.",
+      primaryColor: "#123f73",
+      secondaryColor: "#c62828",
+      backgroundColor: "#f8fafc",
+      textColor: "#1e293b",
+      logoUrl: "",
+      submitButtonText:
+        "Submit Mathematics Assessment",
+      resultTitle: "Assessment Results",
+      resultMessage:
+        "Your assessment has been marked automatically.",
+      showExplanations: true
+    };
+
+    /* =========================================================
+       EXACT QUESTION BANK
+       ========================================================= */
+
+    const defaultQuestions = [
+      {
+        id: 1,
+        topic:
+          "Proper, improper and mixed fractions",
+        question:
+          "Which of the following is an improper fraction?",
+        options: [
+          "$\\frac{3}{7}$",
+          "$\\frac{5}{8}$",
+          "$\\frac{9}{5}$",
+          "$\\frac{2}{9}$"
+        ],
+        correct: 2,
+        explanation:
+          "$\\frac{9}{5}$ is an improper fraction because its numerator is greater than its denominator."
+      },
+
+      {
+        id: 2,
+        topic: "Mixed fractions",
+        question:
+          "Convert $\\frac{17}{4}$ to a mixed number.",
+        options: [
+          "$3\\frac{1}{4}$",
+          "$4\\frac{1}{4}$",
+          "$4\\frac{3}{4}$",
+          "$3\\frac{3}{4}$"
+        ],
+        correct: 1,
+        explanation:
+          "$17\\div4=4$ remainder $1$, so $\\frac{17}{4}=4\\frac{1}{4}$."
+      },
+
+      {
+        id: 3,
+        topic: "Equivalent fractions",
+        question:
+          "Which fraction is equivalent to $\\frac{3}{5}$?",
+        options: [
+          "$\\frac{6}{15}$",
+          "$\\frac{9}{20}$",
+          "$\\frac{12}{20}$",
+          "$\\frac{15}{30}$"
+        ],
+        correct: 2,
+        explanation:
+          "$\\frac{3}{5}\\times\\frac{4}{4}=\\frac{12}{20}$."
+      },
+
+      {
+        id: 4,
+        topic: "Equivalent fractions",
+        question:
+          "Complete $\\frac{7}{9}=\\frac{?}{36}$.",
+        options: [
+          "$21$",
+          "$24$",
+          "$28$",
+          "$32$"
+        ],
+        correct: 2,
+        explanation:
+          "The denominator is multiplied by $4$, so the numerator is also multiplied by $4$: $7\\times4=28$."
+      },
+
+      {
+        id: 5,
+        topic: "Addition fractions",
+        question:
+          "$\\frac{2}{3}+\\frac{1}{6}$",
+        options: [
+          "$\\frac{1}{2}$",
+          "$\\frac{5}{6}$",
+          "$\\frac{3}{9}$",
+          "$\\frac{2}{9}$"
+        ],
+        correct: 1,
+        explanation:
+          "$\\frac{2}{3}=\\frac{4}{6}$, so $\\frac{4}{6}+\\frac{1}{6}=\\frac{5}{6}$."
+      },
+
+      {
+        id: 6,
+        topic: "Subtraction fractions",
+        question:
+          "$\\frac{7}{8}-\\frac{1}{4}$",
+        options: [
+          "$\\frac{3}{8}$",
+          "$\\frac{5}{8}$",
+          "$\\frac{6}{8}$",
+          "$\\frac{1}{2}$"
+        ],
+        correct: 1,
+        explanation:
+          "$\\frac{1}{4}=\\frac{2}{8}$, so $\\frac{7}{8}-\\frac{2}{8}=\\frac{5}{8}$."
+      },
+
+      {
+        id: 7,
+        topic: "Multiplication fractions",
+        question:
+          "$\\frac{3}{5}\\times\\frac{10}{9}$",
+        options: [
+          "$\\frac{2}{3}$",
+          "$\\frac{3}{2}$",
+          "$\\frac{1}{3}$",
+          "$\\frac{5}{6}$"
+        ],
+        correct: 0,
+        explanation:
+          "$\\frac{3}{5}\\times\\frac{10}{9}=\\frac{30}{45}=\\frac{2}{3}$."
+      },
+
+      {
+        id: 8,
+        topic: "Division fractions",
+        question:
+          "$\\frac{5}{6}\\div\\frac{2}{3}$",
+        options: [
+          "$\\frac{5}{9}$",
+          "$1\\frac{1}{4}$",
+          "$\\frac{5}{4}$",
+          "$\\frac{4}{5}$"
+        ],
+        correct: 2,
+        explanation:
+          "$\\frac{5}{6}\\div\\frac{2}{3}=\\frac{5}{6}\\times\\frac{3}{2}=\\frac{5}{4}$."
+      },
+
+      {
+        id: 9,
+        topic: "Mixed fraction operations",
+        question:
+          "$1\\frac{1}{2}+2\\frac{1}{4}$",
+        options: [
+          "$3\\frac{1}{4}$",
+          "$3\\frac{3}{4}$",
+          "$3\\frac{1}{2}$",
+          "$2\\frac{3}{4}$"
+        ],
+        correct: 1,
+        explanation:
+          "$1\\frac{1}{2}=1\\frac{2}{4}$, so $1\\frac{2}{4}+2\\frac{1}{4}=3\\frac{3}{4}$."
+      },
+
+      {
+        id: 10,
+        topic: "Fraction to decimal",
+        question:
+          "$\\frac{7}{8}$",
+        options: [
+          "$0.725$",
+          "$0.825$",
+          "$0.875$",
+          "$0.975$"
+        ],
+        correct: 2,
+        explanation:
+          "$7\\div8=0.875$."
+      },
+
+      {
+        id: 11,
+        topic: "Decimal to fraction",
+        question:
+          "0.35",
+        options: [
+          "$\\frac{7}{20}$",
+          "$\\frac{3}{10}$",
+          "$\\frac{7}{25}$",
+          "$\\frac{35}{10}$"
+        ],
+        correct: 0,
+        explanation:
+          "$0.35=\\frac{35}{100}=\\frac{7}{20}$."
+      },
+
+      {
+        id: 12,
+        topic: "Fraction to percentage",
+        question:
+          "$\\frac{13}{20}$",
+        options: [
+          "$55\\%$",
+          "$60\\%$",
+          "$65\\%$",
+          "$70\\%$"
+        ],
+        correct: 2,
+        explanation:
+          "$\\frac{13}{20}\\times100\\%=65\\%$."
+      },
+
+      {
+        id: 13,
+        topic: "Decimal to percentage",
+        question:
+          "0.72",
+        options: [
+          "$7.2\\%$",
+          "$72\\%$",
+          "$0.72\\%$",
+          "$720\\%$"
+        ],
+        correct: 1,
+        explanation:
+          "$0.72\\times100\\%=72\\%$."
+      },
+
+      {
+        id: 14,
+        topic: "Percentage to fraction",
+        question:
+          "$45\\%$",
+        options: [
+          "$\\frac{9}{20}$",
+          "$\\frac{4}{5}$",
+          "$\\frac{45}{10}$",
+          "$\\frac{5}{9}$"
+        ],
+        correct: 0,
+        explanation:
+          "$45\\%=\\frac{45}{100}=\\frac{9}{20}$."
+      },
+
+      {
+        id: 15,
+        topic: "Terminating decimals",
+        question:
+          "Which fraction has a terminating decimal?",
+        options: [
+          "$\\frac{1}{3}$",
+          "$\\frac{2}{7}$",
+          "$\\frac{5}{8}$",
+          "$\\frac{4}{9}$"
+        ],
+        correct: 2,
+        explanation:
+          "$\\frac{5}{8}=0.625$, which is a terminating decimal."
+      },
+
+      {
+        id: 16,
+        topic: "Recurring decimals",
+        question:
+          "$0.\\overline{3}$",
+        options: [
+          "$\\frac{1}{2}$",
+          "$\\frac{1}{3}$",
+          "$\\frac{3}{10}$",
+          "$\\frac{3}{11}$"
+        ],
+        correct: 1,
+        explanation:
+          "$0.\\overline{3}=\\frac{1}{3}$."
+      },
+
+      {
+        id: 17,
+        topic: "Recurring decimals",
+        question:
+          "$0.\\overline{18}$",
+        options: [
+          "$\\frac{1}{6}$",
+          "$\\frac{2}{11}$",
+          "$\\frac{9}{50}$",
+          "$\\frac{18}{100}$"
+        ],
+        correct: 1,
+        explanation:
+          "$0.\\overline{18}=\\frac{18}{99}=\\frac{2}{11}$."
+      },
+
+      {
+        id: 18,
+        topic: "Real-life percentages",
+        question:
+          "A school bag costs ₦12,000 and is reduced by $15\\%$. What is the sale price?",
+        options: [
+          "₦9,800",
+          "₦10,200",
+          "₦10,500",
+          "₦10,800"
+        ],
+        correct: 1,
+        explanation:
+          "$15\\%$ of ₦12,000 is ₦1,800. Therefore, the sale price is ₦12,000 - ₦1,800 = ₦10,200."
+      },
+
+      {
+        id: 19,
+        topic: "Real-life fractions",
+        question:
+          "A water tank is $\\frac{3}{5}$ full and contains 250 litres. How many litres of water are in the tank?",
+        options: [
+          "100 litres",
+          "125 litres",
+          "150 litres",
+          "175 litres"
+        ],
+        correct: 2,
+        explanation:
+          "$\\frac{3}{5}\\times250=150$ litres."
+      },
+
+      {
+        id: 20,
+        topic: "Real-life percentages",
+        question:
+          "A student answers 34 out of 40 questions correctly. What percentage did the student score?",
+        options: [
+          "80%",
+          "82.5%",
+          "85%",
+          "87.5%"
+        ],
+        correct: 2,
+        explanation:
+          "$\\frac{34}{40}\\times100\\%=85\\%$."
+      }
+    ];
+
+    /* =========================================================
+       UTILITIES
+       ========================================================= */
+
+    function cloneQuestions() {
+      return JSON.parse(
+        JSON.stringify(defaultQuestions)
+      );
+    }
+
+    function cloneConfig() {
+      return JSON.parse(
+        JSON.stringify(defaultConfig)
+      );
+    }
+
+    function safeDate(value) {
+      if (!value) return null;
+
+      try {
+        if (
+          value &&
+          typeof value.toDate === "function"
+        ) {
+          return value.toDate();
+        }
+
+        const d = new Date(value);
+
+        return isNaN(d.getTime())
+          ? null
+          : d;
+      } catch {
+        return null;
+      }
+    }
+
+    function formatDate(value) {
+      const date = safeDate(value);
+
+      if (!date) return "—";
+
+      return date.toLocaleString(
+        "en-NG",
+        {
+          dateStyle: "medium",
+          timeStyle: "short"
+        }
+      );
+    }
+
+    function escapeCSV(value) {
+      const text =
+        value === null ||
+        value === undefined
+          ? ""
+          : String(value);
+
+      return `"${text.replace(
+        /"/g,
+        '""'
+      )}"`;
+    }
+
+    function downloadCSV(
+      filename,
+      rows
+    ) {
+      if (
+        !rows ||
+        !rows.length
+      ) {
+        alert(
+          "There is no data to export."
+        );
+        return;
+      }
+
+      const csv = rows
+        .map(row =>
+          row
+            .map(escapeCSV)
+            .join(",")
+        )
+        .join("\n");
+
+      const blob =
+        new Blob(
+          ["\ufeff" + csv],
+          {
+            type:
+              "text/csv;charset=utf-8;"
+          }
+        );
+
+      const url =
+        URL.createObjectURL(
+          blob
+        );
+
+      const link =
+        document.createElement(
+          "a"
+        );
+
+      link.href = url;
+      link.download =
+        filename;
+
+      document.body.appendChild(
+        link
+      );
+
+      link.click();
+
+      link.remove();
+
+      URL.revokeObjectURL(
+        url
+      );
+    }
+
+    function renderMath(text) {
+      if (
+        !text ||
+        typeof text !== "string"
+      ) {
+        return "";
+      }
+
+      try {
+        let html = text;
+
+        html = html.replace(
+          /\\\[(.*?)\\\]/gs,
+          (_, formula) =>
+            katex.renderToString(
+              formula,
+              {
+                throwOnError: false,
+                displayMode: true
+              }
+            )
+        );
+
+        html = html.replace(
+          /\$(.*?)\$/g,
+          (_, formula) =>
+            katex.renderToString(
+              formula,
+              {
+                throwOnError: false,
+                displayMode: false
+              }
+            )
+        );
+
+        return html;
+      } catch {
+        return text;
+      }
+    }
+
+    function MathText({
+      children,
+      className = ""
+    }) {
+      return (
+        <span
+          className={`math-content ${className}`}
+          dangerouslySetInnerHTML={{
+            __html:
+              renderMath(children)
+          }}
+        />
+      );
+    }
+
+    function generateRandomId() {
+      return (
+        Date.now().toString(36) +
+        Math.random()
+          .toString(36)
+          .substring(2, 10)
+      );
+    }
+
+    function normalizeStudentKey(
+      surname,
+      firstName,
+      className
+    ) {
+      return [
+        surname,
+        firstName,
+        className
+      ]
+        .map(value =>
+          String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(
+              /\s+/g,
+              " "
+            )
+        )
+        .join("|");
+    }
+
+    async function createStudentLockId(
+      surname,
+      firstName,
+      className
+    ) {
+      const raw =
+        normalizeStudentKey(
+          surname,
+          firstName,
+          className
+        );
+
+      if (
+        window.crypto &&
+        window.crypto.subtle &&
+        window.TextEncoder
+      ) {
+        const data =
+          new TextEncoder().encode(
+            raw
+          );
+
+        const hashBuffer =
+          await crypto.subtle.digest(
+            "SHA-256",
+            data
+          );
+
+        return Array.from(
+          new Uint8Array(
+            hashBuffer
+          )
+        )
+          .map(b =>
+            b
+              .toString(16)
+              .padStart(2, "0")
+          )
+          .join("");
+      }
+
+      return btoa(
+        unescape(
+          encodeURIComponent(
+            raw
+          )
+        )
+      )
+        .replace(
+          /[^a-zA-Z0-9]/g,
+          ""
+        )
+        .substring(
+          0,
+          100
+        );
+    }
+
+    function AlertBox({
+      type = "error",
+      children
+    }) {
+      const styles = {
+        error:
+          "bg-red-50 border-red-200 text-red-800",
+        success:
+          "bg-green-50 border-green-200 text-green-800",
+        warning:
+          "bg-amber-50 border-amber-200 text-amber-800",
+        info:
+          "bg-blue-50 border-blue-200 text-blue-800"
+      };
+
+      return (
+        <div
+          className={`border rounded-xl p-4 ${styles[type]}`}
+        >
+          {children}
+        </div>
+      );
+    }
+
+    function Spinner() {
+      return (
+        <div className="h-5 w-5 rounded-full border-2 border-slate-300 border-t-blue-700 animate-spin" />
+      );
+    }
+
+    /* =========================================================
+       LOAD PUBLIC SETTINGS
+       ========================================================= */
+
+    async function loadPublicSettings() {
+      if (!firebaseReady || !db) {
+        return {
+          config: cloneConfig(),
+          questions:
+            cloneQuestions()
+        };
+      }
+
+      try {
+        const snapshot =
+          await db
+            .collection(
+              "assessmentSettings"
+            )
+            .doc(
+              ASSESSMENT_ID
+            )
+            .get();
+
+        if (!snapshot.exists) {
+          return {
+            config: cloneConfig(),
+            questions:
+              cloneQuestions()
+          };
+        }
+
+        const data =
+          snapshot.data() || {};
+
+        return {
+          config: {
+            ...cloneConfig(),
+            ...(data.config || {})
+          },
+
+          questions:
+            Array.isArray(
+              data.questions
+            ) &&
+            data.questions.length
+              ? data.questions
+              : cloneQuestions()
+        };
+      } catch (error) {
+        console.error(
+          "Settings loading error:",
+          error
+        );
+
+        return {
+          config: cloneConfig(),
+          questions:
+            cloneQuestions()
+        };
+      }
+    }
+
+    /* =========================================================
+       STUDENT ASSESSMENT
+       ========================================================= */
+
+    function StudentAssessment({
+      config,
+      questions,
+      onStaffLogin
+    }) {
+      const [
+        surname,
+        setSurname
+      ] = useState("");
+
+      const [
+        firstName,
+        setFirstName
+      ] = useState("");
+
+      const [
+        className,
+        setClassName
+      ] = useState("");
+
+      const [
+        answers,
+        setAnswers
+      ] = useState({});
+
+      const [
+        submitting,
+        setSubmitting
+      ] = useState(false);
+
+      const [
+        result,
+        setResult
+      ] = useState(null);
+
+      const [
+        error,
+        setError
+      ] = useState("");
+
+      const answeredCount =
+        Object.keys(
+          answers
+        ).length;
+
+      const progress =
+        questions.length
+          ? Math.round(
+              (answeredCount /
+                questions.length) *
+                100
+            )
+          : 0;
+
+      function selectAnswer(
+        questionIndex,
+        optionIndex
+      ) {
+        setAnswers(
+          previous => ({
+            ...previous,
+            [questionIndex]:
+              optionIndex
+          })
+        );
+
+        setError("");
+      }
+
+      async function submitAssessment() {
+        setError("");
+
+        if (
+          !firebaseReady ||
+          !db
+        ) {
+          setError(
+            "The assessment system is not connected to Firebase. Please contact the teacher."
+          );
+          return;
+        }
+
+        if (
+          !surname.trim()
+        ) {
+          setError(
+            "Please enter your surname."
+          );
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+          return;
+        }
+
+        if (
+          !firstName.trim()
+        ) {
+          setError(
+            "Please enter your first name."
+          );
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+          return;
+        }
+
+        if (!className) {
+          setError(
+            "Please select your class."
+          );
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+          return;
+        }
+
+        if (
+          answeredCount !==
+          questions.length
+        ) {
+          setError(
+            `You have answered ${answeredCount} of ${questions.length} questions. Please answer every question before submitting.`
+          );
+
+          const firstUnanswered =
+            questions.findIndex(
+              (_, index) =>
+                answers[index] ===
+                undefined
+            );
+
+          if (
+            firstUnanswered >=
+            0
+          ) {
+            const element =
+              document.getElementById(
+                `question-${firstUnanswered}`
+              );
+
+            if (element) {
+              element.scrollIntoView({
+                behavior:
+                  "smooth",
+                block:
+                  "center"
+              });
+            }
+          }
+
+          return;
+        }
+
+        if (
+          !window.confirm(
+            "Are you sure you want to submit your assessment? You cannot submit it again after submission."
+          )
+        ) {
+          return;
+        }
+
+        setSubmitting(true);
+
+        try {
+          const lockId =
+            await createStudentLockId(
+              surname,
+              firstName,
+              className
+            );
+
+          const lockRef =
+            db
+              .collection(
+                "submissionLocks"
+              )
+              .doc(
+                `${ASSESSMENT_ID}_${lockId}`
+              );
+
+          const submissionRef =
+            db
+              .collection(
+                "submissions"
+              )
+              .doc(
+                generateRandomId()
+              );
+
+          let score = 0;
+
+          const details =
+            questions.map(
+              (
+                question,
+                index
+              ) => {
+                const selected =
+                  answers[
+                    index
+                  ];
+
+                const correct =
+                  selected ===
+                  question.correct;
+
+                if (correct) {
+                  score++;
+                }
+
+                return {
+                  questionNumber:
+                    index + 1,
+
+                  topic:
+                    question.topic ||
+                    "",
+
+                  question:
+                    question.question ||
+                    "",
+
+                  options:
+                    question.options ||
+                    [],
+
+                  selectedAnswer:
+                    selected,
+
+                  selectedOption:
+                    question
+                      .options[
+                      selected
+                    ] || "",
+
+                  correctAnswer:
+                    question.correct,
+
+                  correctOption:
+                    question
+                      .options[
+                      question.correct
+                    ] || "",
+
+                  isCorrect:
+                    correct,
+
+                  explanation:
+                    question.explanation ||
+                    ""
+                };
+              }
+            );
+
+          const percentage =
+            Math.round(
+              (score /
+                questions.length) *
+                10000
+            ) / 100;
+
+          const submissionData =
+            {
+              assessmentId:
+                ASSESSMENT_ID,
+
+              assessmentTitle:
+                config.subtitle,
+
+              surname:
+                surname.trim(),
+
+              firstName:
+                firstName.trim(),
+
+              className,
+
+              score,
+
+              total:
+                questions.length,
+
+              percentage,
+
+              details,
+
+              submittedAt:
+                firebase.firestore
+                  .FieldValue
+                  .serverTimestamp(),
+
+              clientSubmittedAt:
+                new Date().toISOString()
+            };
+
+          await db.runTransaction(
+            async transaction => {
+              const lockSnapshot =
+                await transaction.get(
+                  lockRef
+                );
+
+              if (
+                lockSnapshot.exists
+              ) {
+                throw new Error(
+                  "DUPLICATE_SUBMISSION"
+                );
+              }
+
+              transaction.set(
+                lockRef,
+                {
+                  assessmentId:
+                    ASSESSMENT_ID,
+
+                  createdAt:
+                    firebase.firestore
+                      .FieldValue
+                      .serverTimestamp(),
+
+                  submissionId:
+                    submissionRef.id
+                }
+              );
+
+              transaction.set(
+                submissionRef,
+                submissionData
+              );
+            }
+          );
+
+          setResult({
+            score,
+            total:
+              questions.length,
+            percentage,
+            details
+          });
+
+          window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+          });
+        } catch (submitError) {
+          console.error(
+            "Submission error:",
+            submitError
+          );
+
+          if (
+            submitError.message ===
+            "DUPLICATE_SUBMISSION"
+          ) {
+            setError(
+              "A submission already exists for this student name and class for this assessment. Only one submission is allowed."
+            );
+          } else {
+            setError(
+              "We could not submit your assessment. Please check your internet connection and try again."
+            );
+          }
+        } finally {
+          setSubmitting(false);
+        }
+      }
+
+      if (result) {
+        return (
+          <div
+            className="min-h-screen py-10 px-4"
+            style={{
+              background:
+                config.backgroundColor
+            }}
+          >
+            <div className="max-w-4xl mx-auto">
+              <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+                <div
+                  className="p-8 text-white"
+                  style={{
+                    background:
+                      config.primaryColor
+                  }}
+                >
+                  {config.logoUrl && (
+                    <img
+                      src={
+                        config.logoUrl
+                      }
+                      alt={
+                        config.schoolName
+                      }
+                      className="h-16 max-w-[220px] object-contain mb-5 bg-white rounded-lg p-2"
+                    />
+                  )}
+
+                  <p className="text-sm uppercase tracking-wider opacity-90">
+                    {
+                      config.schoolName
+                    }
+                  </p>
+
+                  <h1 className="text-3xl font-bold mt-2">
+                    {
+                      config.resultTitle
+                    }
+                  </h1>
+
+                  <p className="mt-2 opacity-90">
+                    {
+                      config.subtitle
+                    }
+                  </p>
+                </div>
+
+                <div className="p-8">
+                  <div className="text-center mb-8">
+                    <p className="text-slate-500">
+                      Student
+                    </p>
+
+                    <h2 className="text-2xl font-bold">
+                      {
+                        surname
+                      }{" "}
+                      {
+                        firstName
+                      }
+                    </h2>
+
+                    <p className="text-slate-600 mt-1">
+                      {
+                        className
+                      }
+                    </p>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-4 mb-8">
+                    <div className="rounded-xl bg-blue-50 p-6 text-center">
+                      <p className="text-sm text-slate-500">
+                        Score
+                      </p>
+
+                      <p className="text-4xl font-bold text-blue-800 mt-2">
+                        {
+                          result.score
+                        }/
+                        {
+                          result.total
+                        }
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl bg-green-50 p-6 text-center">
+                      <p className="text-sm text-slate-500">
+                        Percentage
+                      </p>
+
+                      <p className="text-4xl font-bold text-green-700 mt-2">
+                        {
+                          result.percentage
+                        }%
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl bg-slate-100 p-6 text-center">
+                      <p className="text-sm text-slate-500">
+                        Questions
+                      </p>
+
+                      <p className="text-4xl font-bold text-slate-800 mt-2">
+                        {
+                          result.total
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-slate-50 p-5 mb-8">
+                    <p className="font-semibold">
+                      {
+                        config.resultMessage
+                      }
+                    </p>
+                  </div>
+
+                  {config.showExplanations && (
+                    <div>
+                      <h3 className="text-xl font-bold mb-5">
+                        Question Review
+                      </h3>
+
+                      <div className="space-y-4">
+                        {result.details.map(
+                          detail => (
+                            <div
+                              key={
+                                detail.questionNumber
+                              }
+                              className={`border rounded-xl p-5 ${
+                                detail.isCorrect
+                                  ? "border-green-200 bg-green-50"
+                                  : "border-red-200 bg-red-50"
+                              }`}
+                            >
+                              <div className="flex gap-3">
+                                <div
+                                  className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-white shrink-0 ${
+                                    detail.isCorrect
+                                      ? "bg-green-600"
+                                      : "bg-red-600"
+                                  }`}
+                                >
+                                  {
+                                    detail.questionNumber
+                                  }
+                                </div>
+
+                                <div className="flex-1">
+                                  <div className="font-semibold mb-3">
+                                    <MathText>
+                                      {
+                                        detail.question
+                                      }
+                                    </MathText>
+                                  </div>
+
+                                  <p className="text-sm mb-2">
+                                    <strong>
+                                      Your answer:
+                                    </strong>{" "}
+                                    {
+                                      detail.selectedOption
+                                    }
+                                  </p>
+
+                                  {!detail.isCorrect && (
+                                    <p className="text-sm mb-2">
+                                      <strong>
+                                        Correct answer:
+                                      </strong>{" "}
+                                      {
+                                        detail.correctOption
+                                      }
+                                    </p>
+                                  )}
+
+                                  <p className="text-sm text-slate-700">
+                                    <strong>
+                                      Explanation:
+                                    </strong>{" "}
+                                    <MathText>
+                                      {
+                                        detail.explanation
+                                      }
+                                    </MathText>
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div
+          className="min-h-screen"
+          style={{
+            background:
+              config.backgroundColor,
+            color:
+              config.textColor
+          }}
+        >
+          <header
+            className="text-white"
+            style={{
+              background:
+                config.primaryColor
+            }}
+          >
+            <div className="max-w-5xl mx-auto px-4 py-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  {config.logoUrl && (
+                    <img
+                      src={
+                        config.logoUrl
+                      }
+                      alt={
+                        config.schoolName
+                      }
+                      className="h-14 max-w-[220px] object-contain bg-white rounded-lg p-2 mb-4"
+                    />
+                  )}
+
+                  <p className="text-sm uppercase tracking-wider opacity-90">
+                    {
+                      config.schoolName
+                    }
+                  </p>
+
+                  <h1 className="text-2xl md:text-3xl font-bold mt-1">
+                    {
+                      config.title
+                    }
+                  </h1>
+
+                  <p className="mt-1 text-blue-100">
+                    {
+                      config.subtitle
+                    }
+                  </p>
+                </div>
+
+                <button
+                  onClick={
+                    onStaffLogin
+                  }
+                  className="no-print text-sm bg-white/10 hover:bg-white/20 border border-white/30 rounded-lg px-4 py-2"
+                >
+                  Staff Login
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <div className="sticky top-0 z-20 bg-white border-b shadow-sm">
+            <div className="max-w-5xl mx-auto px-4 py-3">
+              <div className="flex justify-between text-sm mb-2">
+                <span>
+                  Progress
+                </span>
+
+                <span className="font-semibold">
+                  {
+                    answeredCount
+                  }
+                  /
+                  {
+                    questions.length
+                  }
+                </span>
+              </div>
+
+              <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
+                <div
+                  className="progress-bar h-full rounded-full"
+                  style={{
+                    width: `${progress}%`,
+                    background:
+                      config.secondaryColor
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
+          <main className="max-w-5xl mx-auto px-4 py-8">
+            <div className="bg-white rounded-2xl shadow-sm border p-6 md:p-8 mb-6">
+              <h2 className="text-xl font-bold mb-2">
+                Student Information
+              </h2>
+
+              <p className="text-slate-600 mb-6">
+                Enter your details before answering the questions.
+              </p>
+
+              <div className="grid md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    Surname
+                  </label>
+
+                  <input
+                    type="text"
+                    value={
+                      surname
+                    }
+                    onChange={e =>
+                      setSurname(
+                        e.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter surname"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    First Name
+                  </label>
+
+                  <input
+                    type="text"
+                    value={
+                      firstName
+                    }
+                    onChange={e =>
+                      setFirstName(
+                        e.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter first name"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold mb-2">
+                    Class / Arm
+                  </label>
+
+                  <select
+                    value={
+                      className
+                    }
+                    onChange={e =>
+                      setClassName(
+                        e.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                  >
+                    <option value="">
+                      Select class
+                    </option>
+
+                    {CLASS_OPTIONS.map(
+                      option => (
+                        <option
+                          key={
+                            option
+                          }
+                          value={
+                            option
+                          }
+                        >
+                          {
+                            option
+                          }
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-6 bg-blue-50 border border-blue-100 rounded-xl p-4">
+                <p className="text-sm text-blue-900">
+                  <strong>
+                    Instructions:
+                  </strong>{" "}
+                  {
+                    config.instructions
+                  }
+                </p>
+              </div>
+            </div>
+
+            {error && (
+              <div className="mb-6">
+                <AlertBox type="error">
+                  {error}
+                </AlertBox>
+              </div>
+            )}
+
+            <div className="space-y-5">
+              {questions.map(
+                (
+                  question,
+                  questionIndex
+                ) => (
+                  <div
+                    key={
+                      question.id ||
+                      questionIndex
+                    }
+                    id={`question-${questionIndex}`}
+                    className="question-card bg-white rounded-2xl border shadow-sm p-6 md:p-8"
+                  >
+                    <div className="flex gap-4">
+                      <div
+                        className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold shrink-0"
+                        style={{
+                          background:
+                            config.primaryColor
+                        }}
+                      >
+                        {
+                          questionIndex +
+                          1
+                        }
+                      </div>
+
+                      <div className="flex-1">
+                        <p className="text-xs uppercase tracking-wide text-slate-500 mb-2">
+                          {
+                            question.topic
+                          }
+                        </p>
+
+                        <h3 className="text-lg md:text-xl font-semibold mb-5">
+                          <MathText>
+                            {
+                              question.question
+                            }
+                          </MathText>
+                        </h3>
+
+                        <div className="space-y-3">
+                          {question.options.map(
+                            (
+                              option,
+                              optionIndex
+                            ) => {
+                              const selected =
+                                answers[
+                                  questionIndex
+                                ] ===
+                                optionIndex;
+
+                              return (
+                                <label
+                                  key={
+                                    optionIndex
+                                  }
+                                  className={`option-row flex items-start gap-3 border rounded-xl p-4 cursor-pointer ${
+                                    selected
+                                      ? "selected"
+                                      : "border-slate-200"
+                                  }`}
+                                >
+                                  <input
+                                    type="radio"
+                                    name={`question-${questionIndex}`}
+                                    checked={
+                                      selected
+                                    }
+                                    onChange={() =>
+                                      selectAnswer(
+                                        questionIndex,
+                                        optionIndex
+                                      )
+                                    }
+                                    className="mt-1"
+                                  />
+
+                                  <span className="font-semibold">
+                                    {
+                                      OPTION_LETTERS[
+                                        optionIndex
+                                      ]
+                                    }
+                                    .
+                                  </span>
+
+                                  <span className="flex-1">
+                                    <MathText>
+                                      {
+                                        option
+                                      }
+                                    </MathText>
+                                  </span>
+                                </label>
+                              );
+                            }
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              )}
+            </div>
+
+            <div className="mt-8 bg-white rounded-2xl border shadow-sm p-6 md:p-8">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-5">
+                <div>
+                  <p className="font-bold">
+                    {
+                      answeredCount
+                    }{" "}
+                    of{" "}
+                    {
+                      questions.length
+                    }{" "}
+                    questions answered
+                  </p>
+
+                  <p className="text-sm text-slate-500 mt-1">
+                    You must answer every question before submitting.
+                  </p>
+                </div>
+
+                <button
+                  disabled={
+                    submitting
+                  }
+                  onClick={
+                    submitAssessment
+                  }
+                  className="w-full md:w-auto px-7 py-3 rounded-xl text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    background:
+                      config.secondaryColor
+                  }}
+                >
+                  {
+                    submitting
+                      ? "Submitting..."
+                      : config.submitButtonText
+                  }
+                </button>
+              </div>
+            </div>
+          </main>
+
+          <footer className="text-center py-8 text-sm text-slate-500">
+            {
+              config.schoolName
+            }{" "}
+            • Mathematics Assessment
+          </footer>
+        </div>
+      );
+    }
+
+    /* =========================================================
+       STAFF LOGIN
+       ========================================================= */
+
+    function StaffLogin({
+      onBack,
+      onAuthenticated
+    }) {
+      const [
+        email,
+        setEmail
+      ] = useState("");
+
+      const [
+        password,
+        setPassword
+      ] = useState("");
+
+      const [
+        loading,
+        setLoading
+      ] = useState(false);
+
+      const [
+        error,
+        setError
+      ] = useState("");
+
+      async function login(
+        event
+      ) {
+        event.preventDefault();
+
+        setError("");
+
+        const normalizedEmail =
+          email
+            .trim()
+            .toLowerCase();
+
+        if (
+          !isAllowedAdmin(
+            normalizedEmail
+          )
+        ) {
+          setError(
+            "This email address is not authorised to access the staff dashboard."
+          );
+          return;
+        }
+
+        if (!password) {
+          setError(
+            "Please enter your password."
+          );
+          return;
+        }
+
+        if (
+          !firebaseReady ||
+          !auth
+        ) {
+          setError(
+            "Firebase Authentication is not configured correctly."
+          );
+          return;
+        }
+
+        setLoading(true);
+
+        try {
+          const credential =
+            await auth.signInWithEmailAndPassword(
+              normalizedEmail,
+              password
+            );
+
+          if (
+            !credential.user ||
+            !isAllowedAdmin(
+              credential.user
+                .email
+            )
+          ) {
+            await auth.signOut();
+
+            throw new Error(
+              "UNAUTHORISED"
+            );
+          }
+
+          onAuthenticated(
+            credential.user
+          );
+        } catch (loginError) {
+          console.error(
+            loginError
+          );
+
+          if (
+            loginError.message ===
+            "UNAUTHORISED"
+          ) {
+            setError(
+              "This account is not authorised to access the staff dashboard."
+            );
+          } else if (
+            loginError.code ===
+            "auth/invalid-credential"
+          ) {
+            setError(
+              "Invalid email address or password."
+            );
+          } else if (
+            loginError.code ===
+            "auth/user-not-found"
+          ) {
+            setError(
+              "No Firebase Authentication account exists for this email address."
+            );
+          } else if (
+            loginError.code ===
+            "auth/wrong-password"
+          ) {
+            setError(
+              "The password is incorrect."
+            );
+          } else {
+            setError(
+              loginError.message ||
+                "Unable to sign in."
+            );
+          }
+        } finally {
+          setLoading(false);
+        }
+      }
+
+      return (
+        <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 py-10">
+          <div className="w-full max-w-md">
+            <div className="bg-white rounded-2xl shadow-xl border overflow-hidden">
+              <div className="bg-[#123f73] text-white p-7">
+                <p className="text-sm uppercase tracking-wider opacity-80">
+                  START-RITE SCHOOLS
+                </p>
+
+                <h1 className="text-2xl font-bold mt-2">
+                  Staff Dashboard
+                </h1>
+
+                <p className="text-blue-100 mt-1">
+                  Mathematics Assessment Portal
+                </p>
+              </div>
+
+              <form
+                onSubmit={
+                  login
+                }
+                className="p-7"
+              >
+                {error && (
+                  <div className="mb-5">
+                    <AlertBox type="error">
+                      {error}
+                    </AlertBox>
+                  </div>
+                )}
+
+                <div className="mb-4">
+                  <label className="block text-sm font-semibold mb-2">
+                    Staff Email
+                  </label>
+
+                  <input
+                    type="email"
+                    value={
+                      email
+                    }
+                    onChange={e =>
+                      setEmail(
+                        e.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter authorised staff email"
+                    autoComplete="username"
+                  />
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-sm font-semibold mb-2">
+                    Password
+                  </label>
+
+                  <input
+                    type="password"
+                    value={
+                      password
+                    }
+                    onChange={e =>
+                      setPassword(
+                        e.target.value
+                      )
+                    }
+                    className="w-full border border-slate-300 rounded-lg px-4 py-3 outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter password"
+                    autoComplete="current-password"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={
+                    loading
+                  }
+                  className="w-full bg-[#123f73] text-white rounded-lg py-3 font-bold disabled:opacity-50"
+                >
+                  {
+                    loading
+                      ? "Signing in..."
+                      : "Sign In"
+                  }
+                </button>
+
+                <button
+                  type="button"
+                  onClick={
+                    onBack
+                  }
+                  className="w-full mt-3 border border-slate-300 rounded-lg py-3 font-semibold"
+                >
+                  Back to Assessment
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    /* =========================================================
+       ADMIN DASHBOARD
+       ========================================================= */
+
+    function AdminDashboard({
+      user,
+      config,
+      setConfig,
+      questions,
+      setQuestions,
+      submissions,
+      reloadData,
+      onLogout
+    }) {
+      const [
+        tab,
+        setTab
+      ] = useState(
+        "dashboard"
+      );
+
+      const [
+        saving,
+        setSaving
+      ] = useState(false);
+
+      const [
+        message,
+        setMessage
+      ] = useState("");
+
+      const [
+        search,
+        setSearch
+      ] = useState("");
+
+      const [
+        editingQuestion,
+        setEditingQuestion
+      ] = useState(null);
+
+      const [
+        selectedClass,
+        setSelectedClass
+      ] = useState("All");
+
+      const [
+        selectedQuestion,
+        setSelectedQuestion
+      ] = useState(0);
+
+      const [
+        logoUploading,
+        setLogoUploading
+      ] = useState(false);
+
+      const fileInputRef =
+        useRef(null);
+
+      /* =====================================================
+         SAVE SETTINGS
+         ===================================================== */
+
+      async function saveSettings() {
+        if (
+          !firebaseReady ||
+          !db ||
+          !user ||
+          !isAllowedAdmin(
+            user.email
+          )
+        ) {
+          alert(
+            "You are not authorised to perform this action."
+          );
+          return;
+        }
+
+        setSaving(true);
+        setMessage("");
+
+        try {
+          await db
+            .collection(
+              "assessmentSettings"
+            )
+            .doc(
+              ASSESSMENT_ID
+            )
+            .set(
+              {
+                config,
+                questions
+              },
+              {
+                merge: true
+              }
+            );
+
+          setMessage(
+            "Settings saved successfully."
+          );
+
+          await reloadData();
+        } catch (error) {
+          console.error(
+            error
+          );
+
+          setMessage(
+            "Could not save settings: " +
+              error.message
+          );
+        } finally {
+          setSaving(false);
+        }
+      }
+
+      /* =====================================================
+         SAVE QUESTIONS
+         ===================================================== */
+
+      async function saveQuestions() {
+        if (
+          !firebaseReady ||
+          !db ||
+          !user ||
+          !isAllowedAdmin(
+            user.email
+          )
+        ) {
+          alert(
+            "You are not authorised to perform this action."
+          );
+          return;
+        }
+
+        setSaving(true);
+        setMessage("");
+
+        try {
+          await db
+            .collection(
+              "assessmentSettings"
+            )
+            .doc(
+              ASSESSMENT_ID
+            )
+            .set(
+              {
+                config,
+                questions
+              },
+              {
+                merge: true
+              }
+            );
+
+          setMessage(
+            "Question bank saved successfully."
+          );
+
+          await reloadData();
+        } catch (error) {
+          console.error(
+            error
+          );
+
+          setMessage(
+            "Could not save questions: " +
+              error.message
+          );
+        } finally {
+          setSaving(false);
+        }
+      }
+
+      /* =====================================================
+         UPLOAD LOGO
+         ===================================================== */
+
+      async function uploadLogo(
+        event
+      ) {
+        const file =
+          event.target.files?.[0];
+
+        if (!file) return;
+
+        if (
+          !firebaseReady ||
+          !storage
+        ) {
+          alert(
+            "Firebase Storage is not configured."
+          );
+          return;
+        }
+
+        setLogoUploading(
+          true
+        );
+
+        try {
+          const extension =
+            file.name
+              .split(".")
+              .pop();
+
+          const storageRef =
+            storage
+              .ref()
+              .child(
+                `assessment-logos/${ASSESSMENT_ID}/logo-${Date.now()}.${extension}`
+              );
+
+          await storageRef.put(
+            file
+          );
+
+          const url =
+            await storageRef.getDownloadURL();
+
+          setConfig(
+            previous => ({
+              ...previous,
+              logoUrl: url
+            })
+          );
+
+          setMessage(
+            "Logo uploaded. Click Save Branding to make the change permanent."
+          );
+        } catch (error) {
+          console.error(
+            error
+          );
+
+          alert(
+            "Logo upload failed: " +
+              error.message
+          );
+        } finally {
+          setLogoUploading(
+            false
+          );
+
+          if (
+            fileInputRef.current
+          ) {
+            fileInputRef.current.value =
+              "";
+          }
+        }
+      }
+
+      /* =====================================================
+         QUESTION EDITING
+         ===================================================== */
+
+      function updateQuestion(
+        index,
+        field,
+        value
+      ) {
+        setQuestions(
+          previous =>
+            previous.map(
+              (
+                question,
+                questionIndex
+              ) =>
+                questionIndex ===
+                index
+                  ? {
+                      ...question,
+                      [field]:
+                        value
+                    }
+                  : question
+            )
+        );
+      }
+
+      function updateOption(
+        questionIndex,
+        optionIndex,
+        value
+      ) {
+        setQuestions(
+          previous =>
+            previous.map(
+              (
+                question,
+                index
+              ) =>
+                index ===
+                questionIndex
+                  ? {
+                      ...question,
+                      options:
+                        question.options.map(
+                          (
+                            option,
+                            i
+                          ) =>
+                            i ===
+                            optionIndex
+                              ? value
+                              : option
+                        )
+                    }
+                  : question
+            )
+        );
+      }
+
+      /* =====================================================
+         FILTERED SUBMISSIONS
+         ===================================================== */
+
+      const filteredSubmissions =
+        useMemo(() => {
+          let list =
+            [...submissions];
+
+          if (
+            selectedClass !==
+            "All"
+          ) {
+            list =
+              list.filter(
+                item =>
+                  item.className ===
+                  selectedClass
+              );
+          }
+
+          if (
+            search.trim()
+          ) {
+            const q =
+              search
+                .trim()
+                .toLowerCase();
+
+            list =
+              list.filter(
+                item =>
+                  `${item.surname} ${item.firstName}`
+                    .toLowerCase()
+                    .includes(q) ||
+                  String(
+                    item.className ||
+                      ""
+                  )
+                    .toLowerCase()
+                    .includes(q)
+              );
+          }
+
+          return list;
+        }, [
+          submissions,
+          selectedClass,
+          search
+        ]);
+
+      /* =====================================================
+         STATISTICS
+         ===================================================== */
+
+      const statistics =
+        useMemo(() => {
+          const total =
+            submissions.length;
+
+          const average =
+            total
+              ? submissions.reduce(
+                  (
+                    sum,
+                    item
+                  ) =>
+                    sum +
+                    Number(
+                      item.percentage ||
+                        0
+                    ),
+                  0
+                ) / total
+              : 0;
+
+          const highest =
+            total
+              ? Math.max(
+                  ...submissions.map(
+                    item =>
+                      Number(
+                        item.percentage ||
+                          0
+                      )
+                  )
+                )
+              : 0;
+
+          const lowest =
+            total
+              ? Math.min(
+                  ...submissions.map(
+                    item =>
+                      Number(
+                        item.percentage ||
+                          0
+                      )
+                  )
+                )
+              : 0;
+
+          return {
+            total,
+            average,
+            highest,
+            lowest
+          };
+        }, [
+          submissions
+        ]);
+
+      /* =====================================================
+         CLASS SUMMARY
+         ===================================================== */
+
+      const classSummary =
+        useMemo(() => {
+          return CLASS_OPTIONS.map(
+            className => {
+              const list =
+                submissions.filter(
+                  item =>
+                    item.className ===
+                    className
+                );
+
+              const average =
+                list.length
+                  ? list.reduce(
+                      (
+                        sum,
+                        item
+                      ) =>
+                        sum +
+                        Number(
+                          item.percentage ||
+                            0
+                        ),
+                      0
+                    ) /
+                    list.length
+                  : 0;
+
+              return {
+                className,
+                count:
+                  list.length,
+                average
+              };
+            }
+          );
+        }, [
+          submissions
+        ]);
+
+      /* =====================================================
+         QUESTION ANALYSIS
+         ===================================================== */
+
+      const questionAnalysis =
+        useMemo(() => {
+          return questions.map(
+            (
+              question,
+              questionIndex
+            ) => {
+              let answered = 0;
+              let correct = 0;
+
+              const distribution =
+                [
+                  0,
+                  0,
+                  0,
+                  0
+                ];
+
+              submissions.forEach(
+                submission => {
+                  const detail =
+                    submission
+                      .details?.[
+                      questionIndex
+                    ];
+
+                  if (!detail)
+                    return;
+
+                  if (
+                    detail.selectedAnswer !==
+                    undefined
+                  ) {
+                    answered++;
+
+                    const selected =
+                      Number(
+                        detail.selectedAnswer
+                      );
+
+                    if (
+                      selected >=
+                        0 &&
+                      selected <=
+                        3
+                    ) {
+                      distribution[
+                        selected
+                      ]++;
+                    }
+                  }
+
+                  if (
+                    detail.isCorrect
+                  ) {
+                    correct++;
+                  }
+                }
+              );
+
+              const successRate =
+                submissions.length
+                  ? (
+                      (correct /
+                        submissions.length) *
+                      100
+                    ).toFixed(1)
+                  : "0.0";
+
+              return {
+                question,
+                questionIndex,
+                answered,
+                correct,
+                successRate,
+                distribution
+              };
+            }
+          );
+        }, [
+          questions,
+          submissions
+        ]);
+
+      /* =====================================================
+         EXPORT RESPONSES
+         ===================================================== */
+
+      function exportResponses() {
+        const headers = [
+          "Surname",
+          "First Name",
+          "Class",
+          "Score",
+          "Total",
+          "Percentage",
+          "Submitted At"
+        ];
+
+        for (
+          let i = 1;
+          i <= questions.length;
+          i++
+        ) {
+          headers.push(
+            `Q${i} Answer`
+          );
+
+          headers.push(
+            `Q${i} Score`
+          );
+        }
+
+        const rows =
+          [headers];
+
+        filteredSubmissions.forEach(
+          submission => {
+            const row = [
+              submission.surname,
+              submission.firstName,
+              submission.className,
+              submission.score,
+              submission.total,
+              submission.percentage,
+              formatDate(
+                submission.submittedAt
+              )
+            ];
+
+            questions.forEach(
+              (
+                _,
+                questionIndex
+              ) => {
+                const detail =
+                  submission
+                    .details?.[
+                    questionIndex
+                  ];
+
+                row.push(
+                  detail
+                    ? detail.selectedOption ||
+                        ""
+                    : ""
+                );
+
+                row.push(
+                  detail &&
+                    detail.isCorrect
+                    ? 1
+                    : 0
+                );
+              }
+            );
+
+            rows.push(row);
+          }
+        );
+
+        downloadCSV(
+          "start-rite-mathematics-responses.csv",
+          rows
+        );
+      }
+
+      /* =====================================================
+         EXPORT QUESTION ANALYSIS
+         ===================================================== */
+
+      function exportQuestionAnalysis() {
+        const rows = [
+          [
+            "Question",
+            "Topic",
+            "Correct",
+            "Total Submissions",
+            "Success Rate",
+            "A",
+            "B",
+            "C",
+            "D"
+          ]
+        ];
+
+        questionAnalysis.forEach(
+          analysis => {
+            rows.push([
+              analysis.questionIndex +
+                1,
+              analysis.question.topic,
+              analysis.correct,
+              submissions.length,
+              analysis.successRate +
+                "%",
+              analysis.distribution[0],
+              analysis.distribution[1],
+              analysis.distribution[2],
+              analysis.distribution[3]
+            ]);
+          }
+        );
+
+        downloadCSV(
+          "start-rite-question-analysis.csv",
+          rows
+        );
+      }
+
+      /* =====================================================
+         EXPORT CLASS ANALYSIS
+         ===================================================== */
+
+      function exportClassAnalysis() {
+        const rows = [
+          [
+            "Class",
+            "Submissions",
+            "Average Percentage"
+          ]
+        ];
+
+        classSummary.forEach(
+          item => {
+            rows.push([
+              item.className,
+              item.count,
+              item.average.toFixed(
+                2
+              )
+            ]);
+          }
+        );
+
+        downloadCSV(
+          "start-rite-class-analysis.csv",
+          rows
+        );
+      }
+
+      /* =====================================================
+         NAVIGATION
+         ===================================================== */
+
+      const navItems = [
+        [
+          "dashboard",
+          "Dashboard"
+        ],
+        [
+          "responses",
+          "Responses"
+        ],
+        [
+          "questions",
+          "Questions"
+        ],
+        [
+          "analysis",
+          "Analysis"
+        ],
+        [
+          "branding",
+          "Branding"
+        ],
+        [
+          "export",
+          "Export"
+        ]
+      ];
+
+      /* =====================================================
+         RENDER
+         ===================================================== */
+
+      return (
+        <div className="min-h-screen bg-slate-100">
+          <header
+            className="text-white shadow"
+            style={{
+              background:
+                config.primaryColor
+            }}
+          >
+            <div className="px-5 md:px-8 py-4 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-wider opacity-80">
+                  {
+                    config.schoolName
+                  }
+                </p>
+
+                <h1 className="text-xl md:text-2xl font-bold">
+                  Mathematics Assessment Portal
+                </h1>
+
+                <p className="text-sm text-blue-100">
+                  {
+                    config.subtitle
+                  }
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <span className="hidden md:block text-sm">
+                  {
+                    user.email
+                  }
+                </span>
+
+                <button
+                  onClick={
+                    onLogout
+                  }
+                  className="bg-white/10 border border-white/30 rounded-lg px-4 py-2 text-sm font-semibold hover:bg-white/20"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <div className="flex">
+            <aside className="hidden md:block w-60 bg-white border-r min-h-[calc(100vh-73px)] sticky top-0">
+              <nav className="p-3 space-y-1">
+                {navItems.map(
+                  item => (
+                    <button
+                      key={
+                        item[0]
+                      }
+                      onClick={() =>
+                        setTab(
+                          item[0]
+                        )
+                      }
+                      className={`sidebar-item w-full text-left px-4 py-3 rounded-lg ${tab === item[0] ? "active" : ""}`}
+                    >
+                      {
+                        item[1]
+                      }
+                    </button>
+                  )
+                )}
+              </nav>
+            </aside>
+
+            <main className="flex-1 p-4 md:p-8">
+              <div className="md:hidden mb-5">
+                <select
+                  value={tab}
+                  onChange={e =>
+                    setTab(
+                      e.target.value
+                    )
+                  }
+                  className="w-full bg-white border rounded-lg px-4 py-3"
+                >
+                  {navItems.map(
+                    item => (
+                      <option
+                        key={
+                          item[0]
+                        }
+                        value={
+                          item[0]
+                        }
+                      >
+                        {
+                          item[1]
+                        }
+                      </option>
+                    )
+                  )}
+                </select>
+              </div>
+
+              {message && (
+                <div className="mb-5">
+                  <AlertBox type="success">
+                    {message}
+                  </AlertBox>
+                </div>
+              )}
+
+              {/* =================================================
+                   DASHBOARD
+                   ================================================= */}
+
+              {tab ===
+                "dashboard" && (
+                <div>
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold">
+                      Dashboard
+                    </h2>
+
+                    <p className="text-slate-500 mt-1">
+                      Overview of the current assessment.
+                    </p>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-5">
+                    <StatCard
+                      title="Total Submissions"
+                      value={
+                        statistics.total
+                      }
+                    />
+
+                    <StatCard
+                      title="Average Score"
+                      value={`${statistics.average.toFixed(1)}%`}
+                    />
+
+                    <StatCard
+                      title="Highest Score"
+                      value={`${statistics.highest}%`}
+                    />
+
+                    <StatCard
+                      title="Lowest Score"
+                      value={`${statistics.lowest}%`}
+                    />
+                  </div>
+
+                  <div className="grid lg:grid-cols-2 gap-6 mt-6">
+                    <div className="bg-white rounded-2xl border shadow-sm p-6">
+                      <h3 className="font-bold text-lg mb-5">
+                        Class Summary
+                      </h3>
+
+                      <div className="space-y-4">
+                        {classSummary.map(
+                          item => (
+                            <div
+                              key={
+                                item.className
+                              }
+                              className="border rounded-xl p-4"
+                            >
+                              <div className="flex justify-between">
+                                <strong>
+                                  {
+                                    item.className
+                                  }
+                                </strong>
+
+                                <span>
+                                  {
+                                    item.count
+                                  }{" "}
+                                  submissions
+                                </span>
+                              </div>
+
+                              <div className="mt-3 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full"
+                                  style={{
+                                    width: `${Math.min(item.average, 100)}%`,
+                                    background:
+                                      config.primaryColor
+                                  }}
+                                />
+                              </div>
+
+                              <p className="text-sm text-slate-500 mt-2">
+                                Average:{" "}
+                                <strong>
+                                  {
+                                    item.average.toFixed(
+                                      1
+                                    )
+                                  }
+                                  %
+                                </strong>
+                              </p>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="bg-white rounded-2xl border shadow-sm p-6">
+                      <h3 className="font-bold text-lg mb-5">
+                        Assessment
+                      </h3>
+
+                      <div className="space-y-4">
+                        <InfoRow
+                          label="School"
+                          value={
+                            config.schoolName
+                          }
+                        />
+
+                        <InfoRow
+                          label="Assessment"
+                          value={
+                            config.subtitle
+                          }
+                        />
+
+                        <InfoRow
+                          label="Questions"
+                          value={
+                            questions.length
+                          }
+                        />
+
+                        <InfoRow
+                          label="Firebase"
+                          value={
+                            firebaseReady
+                              ? "Connected"
+                              : "Not connected"
+                          }
+                        />
+
+                        <InfoRow
+                          label="Admin"
+                          value={
+                            user.email
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                   RESPONSES
+                   ================================================= */}
+
+              {tab ===
+                "responses" && (
+                <div>
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold">
+                      Responses
+                    </h2>
+
+                    <p className="text-slate-500 mt-1">
+                      View all student submissions.
+                    </p>
+                  </div>
+
+                  <div className="bg-white border rounded-2xl p-4 mb-5">
+                    <div className="grid md:grid-cols-3 gap-3">
+                      <input
+                        value={
+                          search
+                        }
+                        onChange={e =>
+                          setSearch(
+                            e.target
+                              .value
+                          )
+                        }
+                        placeholder="Search student..."
+                        className="border rounded-lg px-4 py-3"
+                      />
+
+                      <select
+                        value={
+                          selectedClass
+                        }
+                        onChange={e =>
+                          setSelectedClass(
+                            e.target
+                              .value
+                          )
+                        }
+                        className="border rounded-lg px-4 py-3"
+                      >
+                        <option value="All">
+                          All Classes
+                        </option>
+
+                        {CLASS_OPTIONS.map(
+                          item => (
+                            <option
+                              key={
+                                item
+                              }
+                              value={
+                                item
+                              }
+                            >
+                              {
+                                item
+                              }
+                            </option>
+                          )
+                        )}
+                      </select>
+
+                      <button
+                        onClick={
+                          exportResponses
+                        }
+                        className="bg-[#123f73] text-white rounded-lg px-4 py-3 font-semibold"
+                      >
+                        Export CSV
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border rounded-2xl shadow-sm overflow-hidden">
+                    <div className="scroll-table">
+                      <table className="w-full text-sm">
+                        <thead className="bg-slate-100">
+                          <tr>
+                            <th className="text-left p-4">
+                              #
+                            </th>
+
+                            <th className="text-left p-4">
+                              Student
+                            </th>
+
+                            <th className="text-left p-4">
+                              Class
+                            </th>
+
+                            <th className="text-left p-4">
+                              Score
+                            </th>
+
+                            <th className="text-left p-4">
+                              Percentage
+                            </th>
+
+                            <th className="text-left p-4">
+                              Submitted
+                            </th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {filteredSubmissions.map(
+                            (
+                              item,
+                              index
+                            ) => (
+                              <tr
+                                key={
+                                  item.id ||
+                                  index
+                                }
+                                className="border-t hover:bg-slate-50"
+                              >
+                                <td className="p-4">
+                                  {
+                                    index +
+                                    1
+                                  }
+                                </td>
+
+                                <td className="p-4 font-semibold">
+                                  {
+                                    item.surname
+                                  }{" "}
+                                  {
+                                    item.firstName
+                                  }
+                                </td>
+
+                                <td className="p-4">
+                                  {
+                                    item.className
+                                  }
+                                </td>
+
+                                <td className="p-4">
+                                  {
+                                    item.score
+                                  }/
+                                  {
+                                    item.total
+                                  }
+                                </td>
+
+                                <td className="p-4 font-bold">
+                                  {
+                                    item.percentage
+                                  }%
+                                </td>
+
+                                <td className="p-4">
+                                  {formatDate(
+                                    item.submittedAt
+                                  )}
+                                </td>
+                              </tr>
+                            )
+                          )}
+
+                          {!filteredSubmissions.length && (
+                            <tr>
+                              <td
+                                colSpan="6"
+                                className="p-10 text-center text-slate-500"
+                              >
+                                No submissions found.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                   QUESTIONS
+                   ================================================= */}
+
+              {tab ===
+                "questions" && (
+                <div>
+                  <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold">
+                        Question Bank
+                      </h2>
+
+                      <p className="text-slate-500 mt-1">
+                        Edit questions, options, answers and explanations.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={
+                        saveQuestions
+                      }
+                      disabled={
+                        saving
+                      }
+                      className="bg-[#123f73] text-white rounded-lg px-5 py-3 font-semibold disabled:opacity-50"
+                    >
+                      {saving
+                        ? "Saving..."
+                        : "Save Questions"}
+                    </button>
+                  </div>
+
+                  <div className="space-y-5">
+                    {questions.map(
+                      (
+                        question,
+                        index
+                      ) => (
+                        <div
+                          key={
+                            question.id
+                          }
+                          className="bg-white border rounded-2xl shadow-sm overflow-hidden"
+                        >
+                          <button
+                            onClick={() =>
+                              setEditingQuestion(
+                                editingQuestion ===
+                                  index
+                                  ? null
+                                  : index
+                              )
+                            }
+                            className="w-full p-5 text-left flex items-center justify-between gap-4"
+                          >
+                            <div className="flex gap-4 items-center">
+                              <div
+                                className="h-9 w-9 rounded-full text-white flex items-center justify-center font-bold"
+                                style={{
+                                  background:
+                                    config.primaryColor
+                                }}
+                              >
+                                {
+                                  index +
+                                  1
+                                }
+                              </div>
+
+                              <div>
+                                <p className="text-xs text-slate-500 uppercase">
+                                  {
+                                    question.topic
+                                  }
+                                </p>
+
+                                <p className="font-semibold">
+                                  <MathText>
+                                    {
+                                      question.question
+                                    }
+                                  </MathText>
+                                </p>
+                              </div>
+                            </div>
+
+                            <span>
+                              {editingQuestion ===
+                              index
+                                ? "▲"
+                                : "▼"}
+                            </span>
+                          </button>
+
+                          {editingQuestion ===
+                            index && (
+                            <div className="border-t p-5 space-y-5">
+                              <div>
+                                <label className="block text-sm font-semibold mb-2">
+                                  Topic
+                                </label>
+
+                                <input
+                                  value={
+                                    question.topic
+                                  }
+                                  onChange={e =>
+                                    updateQuestion(
+                                      index,
+                                      "topic",
+                                      e.target
+                                        .value
+                                    )
+                                  }
+                                  className="w-full border rounded-lg px-4 py-3"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-semibold mb-2">
+                                  Question
+                                </label>
+
+                                <textarea
+                                  value={
+                                    question.question
+                                  }
+                                  onChange={e =>
+                                    updateQuestion(
+                                      index,
+                                      "question",
+                                      e.target
+                                        .value
+                                    )
+                                  }
+                                  className="admin-textarea w-full border rounded-lg px-4 py-3"
+                                />
+
+                                <p className="text-xs text-slate-500 mt-2">
+                                  Use $...$ for mathematical expressions.
+                                </p>
+                              </div>
+
+                              <div className="grid md:grid-cols-2 gap-4">
+                                {question.options.map(
+                                  (
+                                    option,
+                                    optionIndex
+                                  ) => (
+                                    <div
+                                      key={
+                                        optionIndex
+                                      }
+                                    >
+                                      <label className="block text-sm font-semibold mb-2">
+                                        Option{" "}
+                                        {
+                                          OPTION_LETTERS[
+                                            optionIndex
+                                          ]
+                                        }
+                                      </label>
+
+                                      <input
+                                        value={
+                                          option
+                                        }
+                                        onChange={e =>
+                                          updateOption(
+                                            index,
+                                            optionIndex,
+                                            e.target
+                                              .value
+                                          )
+                                        }
+                                        className="w-full border rounded-lg px-4 py-3"
+                                      />
+                                    </div>
+                                  )
+                                )}
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-semibold mb-2">
+                                  Correct Answer
+                                </label>
+
+                                <select
+                                  value={
+                                    question.correct
+                                  }
+                                  onChange={e =>
+                                    updateQuestion(
+                                      index,
+                                      "correct",
+                                      Number(
+                                        e.target
+                                          .value
+                                      )
+                                    )
+                                  }
+                                  className="w-full border rounded-lg px-4 py-3"
+                                >
+                                  {OPTION_LETTERS.map(
+                                    (
+                                      letter,
+                                      optionIndex
+                                    ) => (
+                                      <option
+                                        key={
+                                          optionIndex
+                                        }
+                                        value={
+                                          optionIndex
+                                        }
+                                      >
+                                        {
+                                          letter
+                                        }
+                                      </option>
+                                    )
+                                  )}
+                                </select>
+                              </div>
+
+                              <div>
+                                <label className="block text-sm font-semibold mb-2">
+                                  Explanation
+                                </label>
+
+                                <textarea
+                                  value={
+                                    question.explanation
+                                  }
+                                  onChange={e =>
+                                    updateQuestion(
+                                      index,
+                                      "explanation",
+                                      e.target
+                                        .value
+                                    )
+                                  }
+                                  className="admin-textarea w-full border rounded-lg px-4 py-3"
+                                />
+                              </div>
+
+                              <div className="bg-slate-50 border rounded-xl p-4">
+                                <p className="text-xs uppercase text-slate-500 mb-2">
+                                  Preview
+                                </p>
+
+                                <p className="font-semibold mb-3">
+                                  <MathText>
+                                    {
+                                      question.question
+                                    }
+                                  </MathText>
+                                </p>
+
+                                <div className="space-y-2">
+                                  {question.options.map(
+                                    (
+                                      option,
+                                      optionIndex
+                                    ) => (
+                                      <div
+                                        key={
+                                          optionIndex
+                                        }
+                                        className={`p-3 rounded-lg border ${
+                                          optionIndex ===
+                                          question.correct
+                                            ? "bg-green-50 border-green-300"
+                                            : "bg-white"
+                                        }`}
+                                      >
+                                        <strong>
+                                          {
+                                            OPTION_LETTERS[
+                                              optionIndex
+                                            ]
+                                          }.
+                                        </strong>{" "}
+                                        <MathText>
+                                          {
+                                            option
+                                          }
+                                        </MathText>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                   ANALYSIS
+                   ================================================= */}
+
+              {tab ===
+                "analysis" && (
+                <div>
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold">
+                      Assessment Analysis
+                    </h2>
+
+                    <p className="text-slate-500 mt-1">
+                      Question-level and class-level performance.
+                    </p>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-4 mb-6">
+                    <button
+                      onClick={
+                        exportQuestionAnalysis
+                      }
+                      className="bg-white border rounded-xl p-4 text-left hover:bg-slate-50"
+                    >
+                      <strong>
+                        Export Question Analysis
+                      </strong>
+
+                      <p className="text-sm text-slate-500 mt-1">
+                        Correct responses and option distribution.
+                      </p>
+                    </button>
+
+                    <button
+                      onClick={
+                        exportClassAnalysis
+                      }
+                      className="bg-white border rounded-xl p-4 text-left hover:bg-slate-50"
+                    >
+                      <strong>
+                        Export Class Analysis
+                      </strong>
+
+                      <p className="text-sm text-slate-500 mt-1">
+                        Class submission counts and averages.
+                      </p>
+                    </button>
+
+                    <div className="bg-white border rounded-xl p-4">
+                      <strong>
+                        Total Submissions
+                      </strong>
+
+                      <p className="text-3xl font-bold text-[#123f73] mt-2">
+                        {
+                          submissions.length
+                        }
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border rounded-2xl shadow-sm overflow-hidden">
+                    <div className="p-5 border-b">
+                      <h3 className="font-bold text-lg">
+                        Question-Level Analysis
+                      </h3>
+                    </div>
+
+                    <div className="scroll-table">
+                      <table className="w-full text-sm">
+                        <thead className="bg-slate-100">
+                          <tr>
+                            <th className="p-4 text-left">
+                              Q
+                            </th>
+
+                            <th className="p-4 text-left">
+                              Topic
+                            </th>
+
+                            <th className="p-4 text-left">
+                              Correct
+                            </th>
+
+                            <th className="p-4 text-left">
+                              Success
+                            </th>
+
+                            <th className="p-4 text-left">
+                              A
+                            </th>
+
+                            <th className="p-4 text-left">
+                              B
+                            </th>
+
+                            <th className="p-4 text-left">
+                              C
+                            </th>
+
+                            <th className="p-4 text-left">
+                              D
+                            </th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {questionAnalysis.map(
+                            analysis => (
+                              <tr
+                                key={
+                                  analysis.questionIndex
+                                }
+                                className="border-t"
+                              >
+                                <td className="p-4 font-bold">
+                                  {
+                                    analysis.questionIndex +
+                                    1
+                                  }
+                                </td>
+
+                                <td className="p-4">
+                                  {
+                                    analysis.question
+                                      .topic
+                                  }
+                                </td>
+
+                                <td className="p-4">
+                                  {
+                                    analysis.correct
+                                  }/
+                                  {
+                                    submissions.length
+                                  }
+                                </td>
+
+                                <td className="p-4 font-bold">
+                                  {
+                                    analysis.successRate
+                                  }%
+                                </td>
+
+                                {analysis.distribution.map(
+                                  (
+                                    count,
+                                    index
+                                  ) => (
+                                    <td
+                                      key={
+                                        index
+                                      }
+                                      className="p-4"
+                                    >
+                                      {
+                                        count
+                                      }
+                                    </td>
+                                  )
+                                )}
+                              </tr>
+                            )
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border rounded-2xl shadow-sm mt-6 overflow-hidden">
+                    <div className="p-5 border-b">
+                      <h3 className="font-bold text-lg">
+                        Class-Level Analysis
+                      </h3>
+                    </div>
+
+                    <div className="p-5">
+                      <div className="grid md:grid-cols-3 gap-4">
+                        {classSummary.map(
+                          item => (
+                            <div
+                              key={
+                                item.className
+                              }
+                              className="border rounded-xl p-5"
+                            >
+                              <p className="text-sm text-slate-500">
+                                {
+                                  item.className
+                                }
+                              </p>
+
+                              <p className="text-3xl font-bold mt-2">
+                                {
+                                  item.average.toFixed(
+                                    1
+                                  )
+                                }%
+                              </p>
+
+                              <p className="text-sm text-slate-500 mt-1">
+                                {
+                                  item.count
+                                }{" "}
+                                submissions
+                              </p>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                   BRANDING
+                   ================================================= */}
+
+              {tab ===
+                "branding" && (
+                <div>
+                  <div className="flex justify-between items-start gap-4 mb-6">
+                    <div>
+                      <h2 className="text-2xl font-bold">
+                        Branding & Settings
+                      </h2>
+
+                      <p className="text-slate-500 mt-1">
+                        Changes are saved to Firebase.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={
+                        saveSettings
+                      }
+                      disabled={
+                        saving
+                      }
+                      className="bg-[#123f73] text-white rounded-lg px-5 py-3 font-semibold disabled:opacity-50"
+                    >
+                      {
+                        saving
+                          ? "Saving..."
+                          : "Save Branding"
+                      }
+                    </button>
+                  </div>
+
+                  <div className="grid lg:grid-cols-2 gap-6">
+                    <div className="bg-white border rounded-2xl p-6 space-y-5">
+                      <h3 className="font-bold text-lg">
+                        Text Settings
+                      </h3>
+
+                      <AdminInput
+                        label="School Name"
+                        value={
+                          config.schoolName
+                        }
+                        onChange={value =>
+                          setConfig(
+                            previous => ({
+                              ...previous,
+                              schoolName:
+                                value
+                            })
+                          )
+                        }
+                      />
+
+                      <AdminInput
+                        label="Platform Title"
+                        value={
+                          config.title
+                        }
+                        onChange={value =>
+                          setConfig(
+                            previous => ({
+                              ...previous,
+                              title:
+                                value
+                            })
+                          )
+                        }
+                      />
+
+                      <AdminInput
+                        label="Assessment Title"
+                        value={
+                          config.subtitle
+                        }
+                        onChange={value =>
+                          setConfig(
+                            previous => ({
+                              ...previous,
+                              subtitle:
+                                value
+                            })
+                          )
+                        }
+                      />
+
+                      <AdminTextarea
+                        label="Instructions"
+                        value={
+                          config.instructions
+                        }
+                        onChange={value =>
+                          setConfig(
+                            previous => ({
+                              ...previous,
+                              instructions:
+                                value
+                            })
+                          )
+                        }
+                      />
+
+                      <AdminInput
+                        label="Submit Button Text"
+                        value={
+                          config.submitButtonText
+                        }
+                        onChange={value =>
+                          setConfig(
+                            previous => ({
+                              ...previous,
+                              submitButtonText:
+                                value
+                            })
+                          )
+                        }
+                      />
+
+                      <AdminInput
+                        label="Result Title"
+                        value={
+                          config.resultTitle
+                        }
+                        onChange={value =>
+                          setConfig(
+                            previous => ({
+                              ...previous,
+                              resultTitle:
+                                value
+                            })
+                          )
+                        }
+                      />
+
+                      <AdminTextarea
+                        label="Result Message"
+                        value={
+                          config.resultMessage
+                        }
+                        onChange={value =>
+                          setConfig(
+                            previous => ({
+                              ...previous,
+                              resultMessage:
+                                value
+                            })
+                          )
+                        }
+                      />
+
+                      <label className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={
+                            config.showExplanations
+                          }
+                          onChange={e =>
+                            setConfig(
+                              previous => ({
+                                ...previous,
+                                showExplanations:
+                                  e.target
+                                    .checked
+                              })
+                            )
+                          }
+                        />
+
+                        <span className="font-semibold">
+                          Show explanations after submission
+                        </span>
+                      </label>
+                    </div>
+
+                    <div className="bg-white border rounded-2xl p-6 space-y-5">
+                      <h3 className="font-bold text-lg">
+                        Appearance
+                      </h3>
+
+                      <ColorInput
+                        label="Primary Colour"
+                        value={
+                          config.primaryColor
+                        }
+                        onChange={value =>
+                          setConfig(
+                            previous => ({
+                              ...previous,
+                              primaryColor:
+                                value
+                            })
+                          )
+                        }
+                      />
+
+                      <ColorInput
+                        label="Secondary Colour"
+                        value={
+                          config.secondaryColor
+                        }
+                        onChange={value =>
+                          setConfig(
+                            previous => ({
+                              ...previous,
+                              secondaryColor:
+                                value
+                            })
+                          )
+                        }
+                      />
+
+                      <ColorInput
+                        label="Background Colour"
+                        value={
+                          config.backgroundColor
+                        }
+                        onChange={value =>
+                          setConfig(
+                            previous => ({
+                              ...previous,
+                              backgroundColor:
+                                value
+                            })
+                          )
+                        }
+                      />
+
+                      <ColorInput
+                        label="Text Colour"
+                        value={
+                          config.textColor
+                        }
+                        onChange={value =>
+                          setConfig(
+                            previous => ({
+                              ...previous,
+                              textColor:
+                                value
+                            })
+                          )
+                        }
+                      />
+
+                      <div>
+                        <label className="block text-sm font-semibold mb-2">
+                          School Logo
+                        </label>
+
+                        {config.logoUrl && (
+                          <div className="border rounded-xl p-4 mb-4 bg-slate-50">
+                            <img
+                              src={
+                                config.logoUrl
+                              }
+                              alt="School logo"
+                              className="max-h-24 max-w-[280px] object-contain"
+                            />
+                          </div>
+                        )}
+
+                        <input
+                          ref={
+                            fileInputRef
+                          }
+                          type="file"
+                          accept="image/*"
+                          onChange={
+                            uploadLogo
+                          }
+                          className="w-full border rounded-lg p-2"
+                        />
+
+                        {logoUploading && (
+                          <div className="flex items-center gap-2 text-sm mt-2">
+                            <Spinner />
+                            Uploading logo...
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="border rounded-xl p-5">
+                        <p className="text-sm font-semibold mb-3">
+                          Live Preview
+                        </p>
+
+                        <div
+                          className="rounded-xl p-5 text-white"
+                          style={{
+                            background:
+                              config.primaryColor
+                          }}
+                        >
+                          {config.logoUrl && (
+                            <img
+                              src={
+                                config.logoUrl
+                              }
+                              className="h-10 max-w-[180px] object-contain bg-white rounded p-1 mb-3"
+                            />
+                          )}
+
+                          <p className="text-xs uppercase opacity-80">
+                            {
+                              config.schoolName
+                            }
+                          </p>
+
+                          <h4 className="font-bold text-xl">
+                            {
+                              config.title
+                            }
+                          </h4>
+
+                          <p className="text-sm opacity-90">
+                            {
+                              config.subtitle
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* =================================================
+                   EXPORT
+                   ================================================= */}
+
+              {tab ===
+                "export" && (
+                <div>
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold">
+                      Export Data
+                    </h2>
+
+                    <p className="text-slate-500 mt-1">
+                      Download assessment data as CSV files.
+                    </p>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-5">
+                    <ExportCard
+                      title="Student Responses"
+                      description="Complete student responses, scores and per-question marks."
+                      button="Export Responses"
+                      onClick={
+                        exportResponses
+                      }
+                    />
+
+                    <ExportCard
+                      title="Question Analysis"
+                      description="Question-level success rates and answer-option distribution."
+                      button="Export Question Analysis"
+                      onClick={
+                        exportQuestionAnalysis
+                      }
+                    />
+
+                    <ExportCard
+                      title="Class Analysis"
+                      description="Submission counts and average percentages by class."
+                      button="Export Class Analysis"
+                      onClick={
+                        exportClassAnalysis
+                      }
+                    />
+                  </div>
+
+                  <div className="bg-white border rounded-2xl p-6 mt-6">
+                    <h3 className="font-bold text-lg mb-4">
+                      Current Dataset
+                    </h3>
+
+                    <div className="grid sm:grid-cols-3 gap-4">
+                      <InfoRow
+                        label="Submissions"
+                        value={
+                          submissions.length
+                        }
+                      />
+
+                      <InfoRow
+                        label="Questions"
+                        value={
+                          questions.length
+                        }
+                      />
+
+                      <InfoRow
+                        label="Classes"
+                        value={
+                          CLASS_OPTIONS.length
+                        }
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </main>
+          </div>
+        </div>
+      );
+    }
+
+    /* =========================================================
+       SMALL ADMIN COMPONENTS
+       ========================================================= */
+
+    function StatCard({
+      title,
+      value
+    }) {
+      return (
+        <div className="bg-white border rounded-2xl shadow-sm p-6">
+          <p className="text-sm text-slate-500">
+            {title}
+          </p>
+
+          <p className="text-3xl font-bold text-[#123f73] mt-2">
+            {value}
+          </p>
+        </div>
+      );
+    }
+
+    function InfoRow({
+      label,
+      value
+    }) {
+      return (
+        <div className="flex justify-between gap-4 py-2 border-b last:border-b-0">
+          <span className="text-slate-500">
+            {label}
+          </span>
+
+          <strong className="text-right">
+            {value}
+          </strong>
+        </div>
+      );
+    }
+
+    function AdminInput({
+      label,
+      value,
+      onChange
+    }) {
+      return (
+        <div>
+          <label className="block text-sm font-semibold mb-2">
+            {label}
+          </label>
+
+          <input
+            value={
+              value || ""
+            }
+            onChange={e =>
+              onChange(
+                e.target.value
+              )
+            }
+            className="w-full border rounded-lg px-4 py-3"
+          />
+        </div>
+      );
+    }
+
+    function AdminTextarea({
+      label,
+      value,
+      onChange
+    }) {
+      return (
+        <div>
+          <label className="block text-sm font-semibold mb-2">
+            {label}
+          </label>
+
+          <textarea
+            value={
+              value || ""
+            }
+            onChange={e =>
+              onChange(
+                e.target.value
+              )
+            }
+            className="w-full border rounded-lg px-4 py-3 min-h-[100px]"
+          />
+        </div>
+      );
+    }
+
+    function ColorInput({
+      label,
+      value,
+      onChange
+    }) {
+      return (
+        <div>
+          <label className="block text-sm font-semibold mb-2">
+            {label}
+          </label>
+
+          <div className="flex gap-3">
+            <input
+              type="color"
+              value={
+                value || "#000000"
+              }
+              onChange={e =>
+                onChange(
+                  e.target.value
+                )
+              }
+              className="h-12 w-16 border rounded cursor-pointer"
+            />
+
+            <input
+              value={
+                value || ""
+              }
+              onChange={e =>
+                onChange(
+                  e.target.value
+                )
+              }
+              className="flex-1 border rounded-lg px-4 py-3"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    function ExportCard({
+      title,
+      description,
+      button,
+      onClick
+    }) {
+      return (
+        <div className="bg-white border rounded-2xl shadow-sm p-6">
+          <h3 className="font-bold text-lg">
+            {title}
+          </h3>
+
+          <p className="text-sm text-slate-500 mt-2 min-h-[50px]">
+            {description}
+          </p>
+
+          <button
+            onClick={onClick}
+            className="mt-5 w-full bg-[#123f73] text-white rounded-lg py-3 font-semibold"
+          >
+            {button}
+          </button>
+        </div>
+      );
+    }
+
+    /* =========================================================
+       ROOT APP
+       ========================================================= */
+
+    function App() {
+      const [
+        config,
+        setConfig
+      ] = useState(
+        cloneConfig()
+      );
+
+      const [
+        questions,
+        setQuestions
+      ] = useState(
+        cloneQuestions()
+      );
+
+      const [
+        loading,
+        setLoading
+      ] = useState(true);
+
+      const [
+        page,
+        setPage
+      ] = useState(
+        "student"
+      );
+
+      const [
+        adminUser,
+        setAdminUser
+      ] = useState(null);
+
+      const [
+        submissions,
+        setSubmissions
+      ] = useState([]);
+
+      const [
+        firebaseError,
+        setFirebaseError
+      ] = useState("");
+
+      /* =====================================================
+         LOAD PUBLIC SETTINGS
+         ===================================================== */
+
+      async function reloadPublicData() {
+        try {
+          const data =
+            await loadPublicSettings();
+
+          setConfig(
+            data.config
+          );
+
+          setQuestions(
+            data.questions
+          );
+        } catch (error) {
+          console.error(
+            error
+          );
+        }
+      }
+
+      /* =====================================================
+         LOAD ADMIN DATA
+         ===================================================== */
+
+      async function loadAdminData() {
+        if (
+          !firebaseReady ||
+          !db
+        ) {
+          return;
+        }
+
+        try {
+          const settingsSnapshot =
+            await db
+              .collection(
+                "assessmentSettings"
+              )
+              .doc(
+                ASSESSMENT_ID
+              )
+              .get();
+
+          if (
+            settingsSnapshot.exists
+          ) {
+            const data =
+              settingsSnapshot.data() ||
+              {};
+
+            if (
+              data.config
+            ) {
+              setConfig(
+                {
+                  ...cloneConfig(),
+                  ...data.config
+                }
+              );
+            }
+
+            if (
+              Array.isArray(
+                data.questions
+              ) &&
+              data.questions.length
+            ) {
+              setQuestions(
+                data.questions
+              );
+            }
+          }
+
+          const submissionsSnapshot =
+            await db
+              .collection(
+                "submissions"
+              )
+              .where(
+                "assessmentId",
+                "==",
+                ASSESSMENT_ID
+              )
+              .get();
+
+          const list =
+            submissionsSnapshot.docs
+              .map(doc => ({
+                id: doc.id,
+                ...doc.data()
+              }))
+              .sort(
+                (a, b) => {
+                  const dateA =
+                    safeDate(
+                      a.submittedAt
+                    );
+
+                  const dateB =
+                    safeDate(
+                      b.submittedAt
+                    );
+
+                  return (
+                    (dateB
+                      ? dateB.getTime()
+                      : 0) -
+                    (dateA
+                      ? dateA.getTime()
+                      : 0)
+                  );
+                }
+              );
+
+          setSubmissions(
+            list
+          );
+        } catch (error) {
+          console.error(
+            "Admin data error:",
+            error
+          );
+
+          setFirebaseError(
+            error.message
+          );
+        }
+      }
+
+      /* =====================================================
+         INITIAL LOAD
+         ===================================================== */
+
+      useEffect(() => {
+        async function initialise() {
+          setLoading(
+            true
+          );
+
+          await reloadPublicData();
+
+          setLoading(
+            false
+          );
+        }
+
+        initialise();
+      }, []);
+
+      /* =====================================================
+         AUTH STATE
+         ===================================================== */
+
+      useEffect(() => {
+        if (
+          !firebaseReady ||
+          !auth
+        ) {
+          return;
+        }
+
+        const unsubscribe =
+          auth.onAuthStateChanged(
+            async user => {
+              if (
+                user &&
+                isAllowedAdmin(
+                  user.email
+                )
+              ) {
+                setAdminUser(
+                  user
+                );
+
+                setPage(
+                  "admin"
+                );
+
+                await loadAdminData();
+              } else {
+                if (user) {
+                  await auth.signOut();
+                }
+
+                setAdminUser(
+                  null
+                );
+              }
+            }
+          );
+
+        return () =>
+          unsubscribe();
+      }, []);
+
+      /* =====================================================
+         LOGOUT
+         ===================================================== */
+
+      async function logout() {
+        if (
+          auth &&
+          auth.currentUser
+        ) {
+          await auth.signOut();
+        }
+
+        setAdminUser(
+          null
+        );
+
+        setPage(
+          "student"
+        );
+
+        await reloadPublicData();
+      }
+
+      /* =====================================================
+         LOADING
+         ===================================================== */
+
+      if (loading) {
+        return (
+          <div className="min-h-screen flex items-center justify-center bg-slate-100">
+            <div className="text-center">
+              <div className="h-10 w-10 rounded-full border-4 border-slate-300 border-t-[#123f73] animate-spin mx-auto" />
+
+              <p className="mt-4 font-semibold text-slate-700">
+                Loading assessment...
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      /* =====================================================
+         ADMIN
+         ===================================================== */
+
+      if (
+        page === "admin" &&
+        adminUser &&
+        isAllowedAdmin(
+          adminUser.email
+        )
+      ) {
+        return (
+          <AdminDashboard
+            user={
+              adminUser
+            }
+            config={
+              config
+            }
+            setConfig={
+              setConfig
+            }
+            questions={
+              questions
+            }
+            setQuestions={
+              setQuestions
+            }
+            submissions={
+              submissions
+            }
+            reloadData={
+              loadAdminData
+            }
+            onLogout={
+              logout
+            }
+          />
+        );
+      }
+
+      /* =====================================================
+         LOGIN
+         ===================================================== */
+
+      if (
+        page === "login"
+      ) {
+        return (
+          <StaffLogin
+            onBack={() =>
+              setPage(
+                "student"
+              )
+            }
+            onAuthenticated={user => {
+              setAdminUser(
+                user
+              );
+
+              setPage(
+                "admin"
+              );
+
+              loadAdminData();
+            }}
+          />
+        );
+      }
+
+      /* =====================================================
+         STUDENT
+         ===================================================== */
+
+      return (
+        <StudentAssessment
+          config={
+            config
+          }
+          questions={
+            questions
+          }
+          onStaffLogin={() =>
+            setPage(
+              "login"
+            )
+          }
+        />
+      );
+    }
+
+    /* =========================================================
+       RENDER
+       ========================================================= */
+
+    ReactDOM.createRoot(
+      document.getElementById(
+        "root"
+      )
+    ).render(
+      <App />
+    );
+  </script>
+</body>
+</html>
