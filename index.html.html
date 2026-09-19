@@ -1,0 +1,4328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Start-Rite Schools - Mathematics Assessment</title>
+
+<link rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+
+<script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+
+<script defer
+        src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --blue: #123f73;
+    --blue-light: #eaf2fb;
+    --red: #c62828;
+    --red-light: #fff0f0;
+    --dark: #172033;
+    --grey: #64748b;
+    --border: #d9e0e8;
+    --background: #f5f7fa;
+    --white: #ffffff;
+    --green: #15803d;
+    --orange: #f97316;
+}
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", Arial, sans-serif;
+    background: var(--background);
+    color: var(--dark);
+}
+
+button,
+input,
+select,
+textarea {
+    font-family: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* ================= HEADER ================= */
+
+.site-header {
+    background: var(--blue);
+    color: white;
+    border-bottom: 5px solid var(--red);
+}
+
+.header-inner {
+    max-width: 1100px;
+    margin: auto;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.logo-wrapper {
+    position: relative;
+    width: 70px;
+    height: 70px;
+    background: white;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.logo-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.logo-placeholder {
+    color: var(--blue);
+    font-weight: 800;
+    font-size: 20px;
+}
+
+.brand-name {
+    margin: 0;
+    font-size: 21px;
+    letter-spacing: .8px;
+}
+
+.brand-title {
+    margin: 4px 0 0;
+    font-size: 12px;
+    opacity: .85;
+    letter-spacing: .5px;
+}
+
+.admin-link {
+    background: rgba(255,255,255,.13);
+    border: 1px solid rgba(255,255,255,.3);
+    color: white;
+    padding: 9px 13px;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.admin-link:hover {
+    background: rgba(255,255,255,.22);
+}
+
+/* ================= MAIN ================= */
+
+.container {
+    width: min(1100px, calc(100% - 30px));
+    margin: 25px auto 50px;
+}
+
+.card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    box-shadow: 0 2px 7px rgba(15,23,42,.05);
+    padding: 25px;
+    margin-bottom: 18px;
+}
+
+.assessment-title {
+    margin: 0 0 7px;
+    color: var(--blue);
+    font-size: 24px;
+}
+
+.instructions {
+    color: var(--grey);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+/* ================= STUDENT ================= */
+
+.student-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #edf0f3;
+}
+
+.field label,
+.setting label {
+    display: block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.field input,
+.field select,
+.setting input,
+.setting select,
+.setting textarea {
+    width: 100%;
+    padding: 11px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+    background: white;
+}
+
+.field input:focus,
+.field select:focus,
+.setting input:focus,
+.setting select:focus,
+.setting textarea:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(18,63,115,.1);
+}
+
+/* ================= QUESTIONS ================= */
+
+.question {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 21px;
+    margin-bottom: 15px;
+}
+
+.question-number {
+    color: var(--blue);
+    font-weight: 800;
+    margin-right: 7px;
+}
+
+.question-text {
+    font-size: 16px;
+    line-height: 1.8;
+    font-weight: 600;
+    margin-bottom: 17px;
+}
+
+.options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.option {
+    position: relative;
+}
+
+.option input {
+    position: absolute;
+    opacity: 0;
+}
+
+.option label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 13px;
+    border: 1px solid #d5dce5;
+    border-radius: 7px;
+    background: white;
+    transition: .15s;
+    cursor: pointer;
+    line-height: 1.7;
+}
+
+.option label:hover {
+    background: #f8fafc;
+    border-color: #9bb2cc;
+}
+
+.option input:checked + label {
+    border-color: var(--blue);
+    background: var(--blue-light);
+}
+
+.option-letter {
+    width: 25px;
+    height: 25px;
+    min-width: 25px;
+    border: 1px solid #aab4c1;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.option input:checked + label .option-letter {
+    background: var(--blue);
+    color: white;
+    border-color: var(--blue);
+}
+
+/* ================= BUTTONS ================= */
+
+.submit-area {
+    text-align: center;
+    margin-top: 25px;
+}
+
+.primary-btn {
+    background: var(--blue);
+    color: white;
+    border: none;
+    padding: 13px 28px;
+    border-radius: 7px;
+    font-weight: 700;
+    font-size: 15px;
+}
+
+.primary-btn:hover {
+    background: #0c315a;
+}
+
+.red-btn {
+    background: var(--red);
+    color: white;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.secondary-btn {
+    background: #475569;
+    color: white;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.green-btn {
+    background: var(--green);
+    color: white;
+    border: none;
+    padding: 11px 18px;
+    border-radius: 6px;
+    font-weight: 700;
+}
+
+.small-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+}
+
+/* ================= ALERTS ================= */
+
+.alert {
+    padding: 13px 15px;
+    border-radius: 6px;
+    margin-bottom: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.alert-error {
+    background: var(--red-light);
+    color: #991b1b;
+    border-left: 4px solid var(--red);
+}
+
+.alert-success {
+    background: #ecfdf3;
+    color: #166534;
+    border-left: 4px solid var(--green);
+}
+
+.alert-warning {
+    background: #fff7ed;
+    color: #9a3412;
+    border-left: 4px solid var(--orange);
+}
+
+.alert-info {
+    background: #eff6ff;
+    color: #1e40af;
+    border-left: 4px solid #2563eb;
+}
+
+/* ================= RESULTS ================= */
+
+.result-score {
+    text-align: center;
+    padding: 30px;
+}
+
+.score-number {
+    font-size: 48px;
+    font-weight: 900;
+    color: var(--blue);
+}
+
+.score-percent {
+    font-size: 20px;
+    color: var(--red);
+    font-weight: 800;
+}
+
+.result-detail {
+    padding: 17px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    margin-bottom: 12px;
+}
+
+.result-detail.correct {
+    border-left: 5px solid var(--green);
+    background: #f0fdf4;
+}
+
+.result-detail.incorrect {
+    border-left: 5px solid var(--red);
+    background: #fff5f5;
+}
+
+.result-answer {
+    margin-top: 7px;
+    font-size: 14px;
+}
+
+.explanation {
+    margin-top: 12px;
+    background: white;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+/* ================= ADMIN ================= */
+
+.admin-login {
+    max-width: 450px;
+    margin: 50px auto;
+}
+
+.admin-header {
+    background: var(--blue);
+    color: white;
+    padding: 17px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 9px 9px 0 0;
+}
+
+.admin-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--border);
+    background: #f8fafc;
+}
+
+.admin-tab {
+    padding: 13px 16px;
+    border: none;
+    background: transparent;
+    font-weight: 700;
+    color: #475569;
+}
+
+.admin-tab.active {
+    color: var(--blue);
+    background: white;
+    border-bottom: 3px solid var(--red);
+}
+
+.admin-content {
+    padding: 22px;
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.setting {
+    margin-bottom: 16px;
+}
+
+.setting textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.stat {
+    padding: 18px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: #fff;
+}
+
+.stat-label {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.stat-value {
+    font-size: 26px;
+    font-weight: 900;
+    margin-top: 5px;
+    color: var(--blue);
+}
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+th,
+td {
+    padding: 10px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+    white-space: nowrap;
+}
+
+th {
+    background: #f1f5f9;
+    color: #475569;
+    font-size: 11px;
+    text-transform: uppercase;
+}
+
+tr:hover td {
+    background: #fafafa;
+}
+
+.question-analysis {
+    border: 1px solid var(--border);
+    padding: 15px;
+    border-radius: 7px;
+    margin-bottom: 10px;
+}
+
+.progress {
+    height: 8px;
+    background: #e2e8f0;
+    border-radius: 99px;
+    overflow: hidden;
+    margin-top: 7px;
+}
+
+.progress-inner {
+    height: 100%;
+    background: var(--blue);
+}
+
+/* QUESTION EDITOR */
+
+.editor-question {
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 20px;
+    margin-bottom: 18px;
+    background: #fff;
+}
+
+.editor-question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.editor-question-title {
+    color: var(--blue);
+    font-weight: 800;
+    font-size: 16px;
+}
+
+.editor-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.editor-full {
+    grid-column: 1 / -1;
+}
+
+.editor-option {
+    display: grid;
+    grid-template-columns: 40px 1fr;
+    gap: 8px;
+    align-items: center;
+}
+
+.editor-option-letter {
+    background: var(--blue);
+    color: white;
+    height: 38px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+}
+
+.correct-option {
+    border: 2px solid var(--green) !important;
+    background: #f0fdf4 !important;
+}
+
+.save-bar {
+    position: sticky;
+    bottom: 10px;
+    background: white;
+    border: 1px solid var(--border);
+    box-shadow: 0 3px 15px rgba(0,0,0,.12);
+    padding: 14px;
+    border-radius: 8px;
+    margin-top: 20px;
+    z-index: 10;
+}
+
+/* PASSWORD CHANGE */
+
+.password-box {
+    max-width: 520px;
+    margin: 30px auto;
+}
+
+.password-requirement {
+    font-size: 13px;
+    color: var(--grey);
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+/* ================= FOOTER ================= */
+
+footer {
+    text-align: center;
+    color: #64748b;
+    font-size: 12px;
+    padding: 25px;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 750px) {
+
+    .header-inner {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .student-grid,
+    .admin-grid,
+    .editor-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .editor-full {
+        grid-column: auto;
+    }
+
+    .options {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .question {
+        padding: 16px;
+    }
+
+    .assessment-title {
+        font-size: 20px;
+    }
+
+    .admin-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .admin-tab {
+        white-space: nowrap;
+    }
+}
+
+@media print {
+
+    .site-header,
+    .admin-link,
+    .submit-area,
+    footer,
+    .admin-header,
+    .admin-tabs {
+        display: none !important;
+    }
+
+    body {
+        background: white;
+    }
+
+    .card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header class="site-header">
+
+    <div class="header-inner">
+
+        <div class="brand">
+
+            <div class="logo-wrapper" id="headerLogo"></div>
+
+            <div>
+                <h1 class="brand-name" id="schoolNameDisplay">
+                    START-RITE SCHOOLS
+                </h1>
+
+                <p class="brand-title" id="platformTitleDisplay">
+                    MATHEMATICS ASSESSMENT
+                </p>
+            </div>
+
+        </div>
+
+        <button class="admin-link" onclick="showAdmin()">
+            Staff Portal
+        </button>
+
+    </div>
+
+</header>
+
+
+<main class="container">
+
+<!-- =========================================================
+     STUDENT VIEW
+========================================================= -->
+
+<section id="studentView">
+
+    <div class="card">
+
+        <h2 class="assessment-title" id="studentAssessmentTitle">
+            FRACTIONS, DECIMALS AND PERCENTAGES I
+        </h2>
+
+        <p class="instructions" id="studentInstructions">
+            Answer all 20 questions. Select one answer for each question.
+            You must complete every question before submitting.
+            You may submit this assessment only once.
+        </p>
+
+        <div id="studentAlert"></div>
+
+        <div class="student-grid">
+
+            <div class="field">
+                <label for="surname">Surname *</label>
+                <input id="surname"
+                       type="text"
+                       placeholder="Enter surname"
+                       autocomplete="off">
+            </div>
+
+            <div class="field">
+                <label for="firstName">First Name *</label>
+                <input id="firstName"
+                       type="text"
+                       placeholder="Enter first name"
+                       autocomplete="off">
+            </div>
+
+            <div class="field">
+
+                <label for="studentClass">Class *</label>
+
+                <select id="studentClass">
+                    <option value="">Select Class</option>
+                    <option value="Year 10A">Year 10A</option>
+                    <option value="Year 10B">Year 10B</option>
+                    <option value="Year 10C">Year 10C</option>
+                </select>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <form id="assessmentForm">
+
+        <div id="questionsContainer"></div>
+
+        <div class="submit-area">
+
+            <button type="submit" class="primary-btn">
+                Submit Mathematics Assessment
+            </button>
+
+        </div>
+
+    </form>
+
+</section>
+
+
+<!-- =========================================================
+     RESULT VIEW
+========================================================= -->
+
+<section id="resultView" class="hidden">
+
+    <div class="card">
+
+        <div class="result-score">
+
+            <h2 class="assessment-title">
+                Assessment Results
+            </h2>
+
+            <p id="resultStudent"></p>
+
+            <div class="score-number" id="scoreDisplay">
+                0 / 20
+            </div>
+
+            <div class="score-percent" id="percentageDisplay">
+                0%
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="card">
+
+        <h3>Question-by-Question Review</h3>
+
+        <div id="resultDetails"></div>
+
+    </div>
+
+    <div class="submit-area">
+
+        <button class="secondary-btn" onclick="window.print()">
+            Print Result
+        </button>
+
+        <button class="primary-btn"
+                onclick="showStudent()"
+                style="margin-left:8px;">
+            Return to Portal
+        </button>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================================
+     ADMIN VIEW
+========================================================= -->
+
+<section id="adminView" class="hidden">
+
+    <!-- ADMIN LOGIN -->
+
+    <div id="adminLoginView" class="admin-login card">
+
+        <h2 class="assessment-title">
+            Staff Portal
+        </h2>
+
+        <p class="instructions">
+            Authorised Start-Rite staff only.
+        </p>
+
+        <div id="adminAlert"></div>
+
+        <div class="setting">
+
+            <label>Email Address</label>
+
+            <input id="adminEmail"
+                   type="email"
+                   placeholder="Staff email"
+                   autocomplete="username">
+
+        </div>
+
+        <div class="setting">
+
+            <label>Password</label>
+
+            <input id="adminPassword"
+                   type="password"
+                   placeholder="Password"
+                   autocomplete="current-password">
+
+        </div>
+
+        <button class="primary-btn" onclick="adminLogin()">
+            Sign In
+        </button>
+
+        <button class="secondary-btn"
+                style="margin-left:8px"
+                onclick="showStudent()">
+            Back
+        </button>
+
+    </div>
+
+
+    <!-- FORCE PASSWORD CHANGE -->
+
+    <div id="passwordChangeView"
+         class="password-box card hidden">
+
+        <h2 class="assessment-title">
+            Change Your Staff Password
+        </h2>
+
+        <div class="alert alert-warning">
+            You are using the default staff password
+            <strong>12345678</strong>.
+            You must create a new password before you can access
+            the staff dashboard.
+        </div>
+
+        <p class="password-requirement">
+            Your new password must contain at least 8 characters.
+            You will use this new password the next time you sign in
+            from this browser.
+        </p>
+
+        <div id="passwordChangeAlert"></div>
+
+        <div class="setting">
+
+            <label>New Password</label>
+
+            <input id="newPassword"
+                   type="password"
+                   placeholder="Enter new password"
+                   autocomplete="new-password">
+
+        </div>
+
+        <div class="setting">
+
+            <label>Confirm New Password</label>
+
+            <input id="confirmPassword"
+                   type="password"
+                   placeholder="Confirm new password"
+                   autocomplete="new-password">
+
+        </div>
+
+        <button class="primary-btn" onclick="changePassword()">
+            Save New Password
+        </button>
+
+        <button class="secondary-btn"
+                style="margin-left:8px"
+                onclick="cancelPasswordChange()">
+            Cancel
+        </button>
+
+    </div>
+
+
+    <!-- ADMIN DASHBOARD -->
+
+    <div id="adminDashboard"
+         class="card hidden"
+         style="padding:0;overflow:hidden;">
+
+        <div class="admin-header">
+
+            <div>
+                <strong>Start-Rite Staff Dashboard</strong>
+                <div id="loggedInAdmin"
+                     style="font-size:12px;opacity:.8;margin-top:3px;">
+                </div>
+            </div>
+
+            <button class="red-btn" onclick="adminLogout()">
+                Log Out
+            </button>
+
+        </div>
+
+
+        <div class="admin-tabs">
+
+            <button class="admin-tab active"
+                    onclick="openAdminTab('dashboard', this)">
+                Dashboard
+            </button>
+
+            <button class="admin-tab"
+                    onclick="openAdminTab('responses', this)">
+                Responses
+            </button>
+
+            <button class="admin-tab"
+                    onclick="openAdminTab('questions', this)">
+                Edit Questions
+            </button>
+
+            <button class="admin-tab"
+                    onclick="openAdminTab('analysis', this)">
+                Question Analysis
+            </button>
+
+            <button class="admin-tab"
+                    onclick="openAdminTab('branding', this)">
+                Site Settings
+            </button>
+
+            <button class="admin-tab"
+                    onclick="openAdminTab('export', this)">
+                Export
+            </button>
+
+        </div>
+
+
+        <!-- DASHBOARD -->
+
+        <div id="adminDashboardTab"
+             class="admin-content">
+
+            <h3>Assessment Overview</h3>
+
+            <div class="stats-grid">
+
+                <div class="stat">
+
+                    <div class="stat-label">
+                        TOTAL SUBMISSIONS
+                    </div>
+
+                    <div class="stat-value"
+                         id="totalSubmissions">
+                        0
+                    </div>
+
+                </div>
+
+                <div class="stat">
+
+                    <div class="stat-label">
+                        AVERAGE SCORE
+                    </div>
+
+                    <div class="stat-value"
+                         id="averageScore">
+                        0%
+                    </div>
+
+                </div>
+
+                <div class="stat">
+
+                    <div class="stat-label">
+                        HIGHEST SCORE
+                    </div>
+
+                    <div class="stat-value"
+                         id="highestScore">
+                        0%
+                    </div>
+
+                </div>
+
+                <div class="stat">
+
+                    <div class="stat-label">
+                        LOWEST SCORE
+                    </div>
+
+                    <div class="stat-value"
+                         id="lowestScore">
+                        0%
+                    </div>
+
+                </div>
+
+            </div>
+
+            <h3>Class Summary</h3>
+
+            <div id="classSummary"></div>
+
+        </div>
+
+
+        <!-- RESPONSES -->
+
+        <div id="adminResponsesTab"
+             class="admin-content hidden">
+
+            <h3>Student Responses</h3>
+
+            <div id="responsesTable"></div>
+
+        </div>
+
+
+        <!-- EDIT QUESTIONS -->
+
+        <div id="adminQuestionsTab"
+             class="admin-content hidden">
+
+            <h3>Edit Assessment Questions</h3>
+
+            <p class="instructions">
+                You can edit the question, topic, all four options,
+                correct answer and explanation. Changes are saved to
+                this browser and immediately become the questions shown
+                to students.
+            </p>
+
+            <div class="alert alert-warning">
+                Be careful when changing questions after students have
+                already submitted. Existing student records retain their
+                original selected answers, but the current question bank
+                may be different.
+            </div>
+
+            <div id="questionEditor"></div>
+
+            <div class="save-bar">
+
+                <button class="primary-btn"
+                        onclick="saveQuestions()">
+                    Save All Question Changes
+                </button>
+
+                <button class="secondary-btn"
+                        onclick="resetQuestions()"
+                        style="margin-left:8px;">
+                    Restore Original Questions
+                </button>
+
+                <span id="questionSaveMessage"
+                      style="margin-left:12px;font-size:13px;">
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- ANALYSIS -->
+
+        <div id="adminAnalysisTab"
+             class="admin-content hidden">
+
+            <h3>Question-Level Analysis</h3>
+
+            <p class="instructions">
+                Analysis is calculated from submitted student responses.
+            </p>
+
+            <div id="questionAnalysis"></div>
+
+        </div>
+
+
+        <!-- BRANDING -->
+
+        <div id="adminBrandingTab"
+             class="admin-content hidden">
+
+            <h3>Site Customisation</h3>
+
+            <div class="admin-grid">
+
+                <div class="setting">
+
+                    <label>School Name</label>
+
+                    <input id="settingSchoolName">
+
+                </div>
+
+                <div class="setting">
+
+                    <label>Platform Title</label>
+
+                    <input id="settingPlatformTitle">
+
+                </div>
+
+            </div>
+
+            <div class="setting">
+
+                <label>Assessment Title</label>
+
+                <input id="settingAssessmentTitle">
+
+            </div>
+
+            <div class="setting">
+
+                <label>Student Instructions</label>
+
+                <textarea id="settingInstructions"></textarea>
+
+            </div>
+
+            <div class="setting">
+
+                <label>Upload School Logo</label>
+
+                <input type="file"
+                       id="logoUpload"
+                       accept="image/*">
+
+                <p class="instructions">
+                    Select an image from your computer.
+                </p>
+
+            </div>
+
+            <div class="admin-grid">
+
+                <div class="setting">
+
+                    <label>Primary Blue</label>
+
+                    <input type="color"
+                           id="primaryColor">
+
+                </div>
+
+                <div class="setting">
+
+                    <label>Secondary Red</label>
+
+                    <input type="color"
+                           id="secondaryColor">
+
+                </div>
+
+            </div>
+
+            <div class="setting">
+
+                <label>Submit Button Text</label>
+
+                <input id="settingSubmitButton">
+
+            </div>
+
+            <div class="setting">
+
+                <label>Result Title</label>
+
+                <input id="settingResultTitle">
+
+            </div>
+
+            <div class="setting">
+
+                <label>Result Message</label>
+
+                <textarea id="settingResultMessage"></textarea>
+
+            </div>
+
+            <button class="primary-btn"
+                    onclick="saveSettings()">
+                Save Settings
+            </button>
+
+            <div id="settingsMessage"
+                 style="margin-top:15px;">
+            </div>
+
+        </div>
+
+
+        <!-- EXPORT -->
+
+        <div id="adminExportTab"
+             class="admin-content hidden">
+
+            <h3>Export Student Responses</h3>
+
+            <p class="instructions">
+                Download all student responses as a CSV file.
+                The export includes Q1-Q20 answers and individual
+                question scores.
+            </p>
+
+            <button class="primary-btn"
+                    onclick="exportCSV()">
+                Download CSV
+            </button>
+
+            <button class="secondary-btn"
+                    onclick="clearResponses()"
+                    style="margin-left:8px;">
+                Clear All Responses
+            </button>
+
+            <div class="alert alert-warning"
+                 style="margin-top:20px;">
+                Clearing responses permanently removes the assessment
+                records from this browser.
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<footer>
+    Start-Rite Schools &nbsp;|&nbsp; Mathematics Assessment Portal
+</footer>
+
+
+<script>
+
+/* ==========================================================
+   ADMIN LOGIN CONFIGURATION
+========================================================== */
+
+const ADMIN_EMAILS = [
+    "emmanueliwe@startriteschools.com.ng",
+    "collinstyohemba@startriteschools.com.ng",
+    "oguduguabdool@startriteschools.com.ng"
+];
+
+const DEFAULT_ADMIN_PASSWORD = "12345678";
+
+const PASSWORD_STORAGE_KEY =
+    "start_rite_admin_passwords_v1";
+
+const ADMIN_SESSION_KEY =
+    "start_rite_admin_session_v1";
+
+
+/* ==========================================================
+   STORAGE KEYS
+========================================================== */
+
+const STORAGE_KEY =
+    "start_rite_math_assessment_responses_v1";
+
+const SETTINGS_KEY =
+    "start_rite_math_settings_v1";
+
+const SUBMISSION_KEY =
+    "start_rite_math_student_submissions_v1";
+
+const QUESTIONS_KEY =
+    "start_rite_math_questions_v1";
+
+
+/* ==========================================================
+   ORIGINAL QUESTION BANK
+========================================================== */
+
+const originalQuestions = [
+
+{
+    id: 1,
+    topic: "Proper, improper and mixed fractions",
+    question: "Which of the following is an improper fraction?",
+    options: [
+        "$\\frac{3}{7}$",
+        "$\\frac{5}{8}$",
+        "$\\frac{9}{5}$",
+        "$\\frac{2}{9}$"
+    ],
+    correct: 2,
+    explanation:
+        "$\\frac{9}{5}$ is an improper fraction because its numerator is greater than its denominator."
+},
+
+{
+    id: 2,
+    topic: "Mixed fractions",
+    question: "Convert $\\frac{17}{4}$ to a mixed number.",
+    options: [
+        "$3\\frac{1}{4}$",
+        "$4\\frac{1}{4}$",
+        "$4\\frac{3}{4}$",
+        "$3\\frac{3}{4}$"
+    ],
+    correct: 0,
+    explanation:
+        "$17\\div4=4$ remainder $1$, so $\\frac{17}{4}=4\\frac{1}{4}$."
+},
+
+{
+    id: 3,
+    topic: "Equivalent fractions",
+    question: "Which fraction is equivalent to $\\frac{3}{5}$?",
+    options: [
+        "$\\frac{6}{15}$",
+        "$\\frac{9}{20}$",
+        "$\\frac{12}{20}$",
+        "$\\frac{15}{30}$"
+    ],
+    correct: 2,
+    explanation:
+        "$\\frac{3}{5}\\times\\frac{4}{4}=\\frac{12}{20}$."
+},
+
+{
+    id: 4,
+    topic: "Equivalent fractions",
+    question: "Complete the statement: $\\frac{7}{9}=\\frac{?}{36}$.",
+    options: [
+        "$21$",
+        "$24$",
+        "$28$",
+        "$32$"
+    ],
+    correct: 2,
+    explanation:
+        "Since $9\\times4=36$, multiply the numerator by $4$: $7\\times4=28$."
+},
+
+{
+    id: 5,
+    topic: "Addition of fractions",
+    question: "Calculate $\\frac{2}{3}+\\frac{1}{6}$.",
+    options: [
+        "$\\frac{1}{2}$",
+        "$\\frac{5}{6}$",
+        "$\\frac{3}{9}$",
+        "$\\frac{2}{9}$"
+    ],
+    correct: 1,
+    explanation:
+        "$\\frac{2}{3}=\\frac{4}{6}$, so $\\frac{4}{6}+\\frac{1}{6}=\\frac{5}{6}$."
+},
+
+{
+    id: 6,
+    topic: "Subtraction of fractions",
+    question: "Work out $\\frac{7}{8}-\\frac{1}{4}$.",
+    options: [
+        "$\\frac{3}{8}$",
+        "$\\frac{5}{8}$",
+        "$\\frac{6}{8}$",
+        "$\\frac{1}{2}$"
+    ],
+    correct: 1,
+    explanation:
+        "$\\frac{1}{4}=\\frac{2}{8}$, therefore $\\frac{7}{8}-\\frac{2}{8}=\\frac{5}{8}$."
+},
+
+{
+    id: 7,
+    topic: "Multiplication of fractions",
+    question: "Calculate $\\frac{3}{5}\\times\\frac{10}{9}$.",
+    options: [
+        "$\\frac{2}{3}$",
+        "$\\frac{3}{2}$",
+        "$\\frac{1}{3}$",
+        "$\\frac{5}{6}$"
+    ],
+    correct: 0,
+    explanation:
+        "$\\frac{3}{5}\\times\\frac{10}{9}=\\frac{30}{45}=\\frac{2}{3}$."
+},
+
+{
+    id: 8,
+    topic: "Division of fractions",
+    question: "Calculate $\\frac{5}{6}\\div\\frac{2}{3}$.",
+    options: [
+        "$\\frac{5}{9}$",
+        "$1\\frac{1}{4}$",
+        "$\\frac{5}{4}$",
+        "$\\frac{4}{5}$"
+    ],
+    correct: 2,
+    explanation:
+        "Divide by multiplying by the reciprocal: $\\frac{5}{6}\\times\\frac{3}{2}=\\frac{15}{12}=\\frac{5}{4}$."
+},
+
+{
+    id: 9,
+    topic: "Mixed fraction operations",
+    question: "Calculate $1\\frac{1}{2}+2\\frac{1}{4}$.",
+    options: [
+        "$3\\frac{1}{4}$",
+        "$3\\frac{3}{4}$",
+        "$3\\frac{1}{2}$",
+        "$2\\frac{3}{4}$"
+    ],
+    correct: 1,
+    explanation:
+        "$1\\frac{1}{2}=1\\frac{2}{4}$, so $1\\frac{2}{4}+2\\frac{1}{4}=3\\frac{3}{4}$."
+},
+
+{
+    id: 10,
+    topic: "Fraction to decimal",
+    question: "Convert $\\frac{7}{8}$ to a decimal.",
+    options: [
+        "$0.725$",
+        "$0.825$",
+        "$0.875$",
+        "$0.975$"
+    ],
+    correct: 2,
+    explanation:
+        "$7\\div8=0.875$."
+},
+
+{
+    id: 11,
+    topic: "Decimal to fraction",
+    question: "Express $0.35$ as a fraction in its simplest form.",
+    options: [
+        "$\\frac{7}{20}$",
+        "$\\frac{3}{10}$",
+        "$\\frac{7}{25}$",
+        "$\\frac{35}{10}$"
+    ],
+    correct: 0,
+    explanation:
+        "$0.35=\\frac{35}{100}=\\frac{7}{20}$."
+},
+
+{
+    id: 12,
+    topic: "Fraction to percentage",
+    question: "Convert $\\frac{13}{20}$ to a percentage.",
+    options: [
+        "$55\\%$",
+        "$60\\%$",
+        "$65\\%$",
+        "$70\\%$"
+    ],
+    correct: 2,
+    explanation:
+        "$\\frac{13}{20}\\times100\\%=65\\%$."
+},
+
+{
+    id: 13,
+    topic: "Decimal to percentage",
+    question: "Express $0.72$ as a percentage.",
+    options: [
+        "$7.2\\%$",
+        "$72\\%$",
+        "$0.72\\%$",
+        "$720\\%$"
+    ],
+    correct: 1,
+    explanation:
+        "Multiply the decimal by $100$: $0.72\\times100\\%=72\\%$."
+},
+
+{
+    id: 14,
+    topic: "Percentage to fraction",
+    question: "Express $45\\%$ as a fraction in its simplest form.",
+    options: [
+        "$\\frac{9}{20}$",
+        "$\\frac{4}{5}$",
+        "$\\frac{45}{10}$",
+        "$\\frac{5}{9}$"
+    ],
+    correct: 0,
+    explanation:
+        "$45\\%=\\frac{45}{100}=\\frac{9}{20}$."
+},
+
+{
+    id: 15,
+    topic: "Terminating decimals",
+    question: "Which of the following fractions has a terminating decimal?",
+    options: [
+        "$\\frac{1}{3}$",
+        "$\\frac{2}{7}$",
+        "$\\frac{5}{8}$",
+        "$\\frac{4}{9}$"
+    ],
+    correct: 2,
+    explanation:
+        "$\\frac{5}{8}=0.625$, which terminates."
+},
+
+{
+    id: 16,
+    topic: "Recurring decimals",
+    question: "Express $0.\\overline{3}$ as a fraction.",
+    options: [
+        "$\\frac{1}{2}$",
+        "$\\frac{1}{3}$",
+        "$\\frac{3}{10}$",
+        "$\\frac{3}{11}$"
+    ],
+    correct: 1,
+    explanation:
+        "Let $x=0.\\overline{3}$. Then $10x=3.\\overline{3}$. Subtracting gives $9x=3$, so $x=\\frac{1}{3}$."
+},
+
+{
+    id: 17,
+    topic: "Recurring decimals",
+    question: "Express $0.\\overline{18}$ as a fraction in its simplest form.",
+    options: [
+        "$\\frac{1}{6}$",
+        "$\\frac{2}{11}$",
+        "$\\frac{9}{50}$",
+        "$\\frac{18}{100}$"
+    ],
+    correct: 1,
+    explanation:
+        "Let $x=0.\\overline{18}$. Then $100x=18.\\overline{18}$. Hence $99x=18$, giving $x=\\frac{18}{99}=\\frac{2}{11}$."
+},
+
+{
+    id: 18,
+    topic: "Real-life percentages",
+    question: "A school bag costs ₦12,000. It is reduced by $15\\%$. What is the sale price?",
+    options: [
+        "₦9,800",
+        "₦10,200",
+        "₦10,500",
+        "₦10,800"
+    ],
+    correct: 1,
+    explanation:
+        "Discount $=15\\%$ of ₦12,000 $=₦1,800$. Therefore the sale price is ₦12,000 − ₦1,800 = ₦10,200."
+},
+
+{
+    id: 19,
+    topic: "Real-life fractions",
+    question: "A tank is $\\frac{3}{5}$ full. If the tank holds 250 litres, how much water is in it?",
+    options: [
+        "100 litres",
+        "125 litres",
+        "150 litres",
+        "175 litres"
+    ],
+    correct: 2,
+    explanation:
+        "$\\frac{3}{5}\\times250=150$ litres."
+},
+
+{
+    id: 20,
+    topic: "Real-life percentages",
+    question: "A student scores $34$ marks out of $40$. What percentage did the student score?",
+    options: [
+        "$80\\%$",
+        "$82.5\\%$",
+        "$85\\%$",
+        "$87.5\\%$"
+    ],
+    correct: 2,
+    explanation:
+        "$\\frac{34}{40}\\times100\\%=85\\%$."
+}
+
+];
+
+
+/* ==========================================================
+   CURRENT QUESTIONS
+========================================================== */
+
+let questions;
+
+const storedQuestions =
+    localStorage.getItem(QUESTIONS_KEY);
+
+if (storedQuestions) {
+
+    try {
+        questions = JSON.parse(storedQuestions);
+
+        if (!Array.isArray(questions) ||
+            questions.length !== 20) {
+            questions = clone(originalQuestions);
+        }
+
+    } catch (error) {
+        questions = clone(originalQuestions);
+    }
+
+} else {
+    questions = clone(originalQuestions);
+}
+
+
+/* ==========================================================
+   SETTINGS
+========================================================== */
+
+let settings =
+    JSON.parse(
+        localStorage.getItem(SETTINGS_KEY) || "null"
+    ) || {
+
+        schoolName: "START-RITE SCHOOLS",
+
+        platformTitle:
+            "MATHEMATICS ASSESSMENT",
+
+        assessmentTitle:
+            "FRACTIONS, DECIMALS AND PERCENTAGES I",
+
+        instructions:
+            "Answer all 20 questions. Select one answer for each question. You must complete every question before submitting. You may submit this assessment only once.",
+
+        primaryColor:
+            "#123f73",
+
+        secondaryColor:
+            "#c62828",
+
+        logo: "",
+
+        submitButtonText:
+            "Submit Mathematics Assessment",
+
+        resultTitle:
+            "Assessment Results",
+
+        resultMessage:
+            "Your assessment has been marked automatically."
+    };
+
+
+/* ==========================================================
+   CLONE
+========================================================== */
+
+function clone(data) {
+    return JSON.parse(JSON.stringify(data));
+}
+
+
+/* ==========================================================
+   NAVIGATION
+========================================================== */
+
+function showStudent() {
+
+    document.getElementById("studentView")
+        .classList.remove("hidden");
+
+    document.getElementById("resultView")
+        .classList.add("hidden");
+
+    document.getElementById("adminView")
+        .classList.add("hidden");
+
+    window.scrollTo(0,0);
+}
+
+
+function showAdmin() {
+
+    document.getElementById("studentView")
+        .classList.add("hidden");
+
+    document.getElementById("resultView")
+        .classList.add("hidden");
+
+    document.getElementById("adminView")
+        .classList.remove("hidden");
+
+    document.getElementById("adminLoginView")
+        .classList.remove("hidden");
+
+    document.getElementById("passwordChangeView")
+        .classList.add("hidden");
+
+    document.getElementById("adminDashboard")
+        .classList.add("hidden");
+
+    clearAlert("adminAlert");
+
+    window.scrollTo(0,0);
+}
+
+
+/* ==========================================================
+   PASSWORD SYSTEM
+========================================================== */
+
+function getAdminPasswords() {
+
+    try {
+
+        return JSON.parse(
+            localStorage.getItem(
+                PASSWORD_STORAGE_KEY
+            ) || "{}"
+        );
+
+    } catch (error) {
+
+        return {};
+
+    }
+}
+
+
+function saveAdminPasswords(passwords) {
+
+    localStorage.setItem(
+        PASSWORD_STORAGE_KEY,
+        JSON.stringify(passwords)
+    );
+}
+
+
+function isDefaultPassword(email) {
+
+    const passwords =
+        getAdminPasswords();
+
+    return !passwords[email] ||
+           passwords[email] === DEFAULT_ADMIN_PASSWORD;
+}
+
+
+/* ==========================================================
+   ADMIN LOGIN
+========================================================== */
+
+let currentAdminEmail = "";
+
+
+function adminLogin() {
+
+    clearAlert("adminAlert");
+
+    const email =
+        document.getElementById("adminEmail")
+        .value
+        .trim()
+        .toLowerCase();
+
+    const password =
+        document.getElementById("adminPassword")
+        .value;
+
+    if (!ADMIN_EMAILS.includes(email)) {
+
+        showAlert(
+            "adminAlert",
+            "This email address is not authorised to access the staff portal.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const passwords =
+        getAdminPasswords();
+
+    const storedPassword =
+        passwords[email] || DEFAULT_ADMIN_PASSWORD;
+
+
+    if (password !== storedPassword) {
+
+        showAlert(
+            "adminAlert",
+            "Incorrect password.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    currentAdminEmail = email;
+
+    sessionStorage.setItem(
+        ADMIN_SESSION_KEY,
+        email
+    );
+
+
+    document.getElementById("adminLoginView")
+        .classList.add("hidden");
+
+
+    /*
+       FORCE PASSWORD CHANGE
+       if the account is still using
+       12345678.
+    */
+
+    if (password === DEFAULT_ADMIN_PASSWORD ||
+        !passwords[email]) {
+
+        document.getElementById("passwordChangeView")
+            .classList.remove("hidden");
+
+        document.getElementById("newPassword")
+            .value = "";
+
+        document.getElementById("confirmPassword")
+            .value = "";
+
+        clearAlert("passwordChangeAlert");
+
+        return;
+    }
+
+
+    enterAdminDashboard();
+}
+
+
+/* ==========================================================
+   CHANGE PASSWORD
+========================================================== */
+
+function changePassword() {
+
+    clearAlert("passwordChangeAlert");
+
+    const newPassword =
+        document.getElementById("newPassword")
+        .value;
+
+    const confirmPassword =
+        document.getElementById("confirmPassword")
+        .value;
+
+
+    if (newPassword.length < 8) {
+
+        showAlert(
+            "passwordChangeAlert",
+            "Your new password must contain at least 8 characters.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (newPassword === DEFAULT_ADMIN_PASSWORD) {
+
+        showAlert(
+            "passwordChangeAlert",
+            "You must choose a password different from 12345678.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (newPassword !== confirmPassword) {
+
+        showAlert(
+            "passwordChangeAlert",
+            "The two passwords do not match.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    const passwords =
+        getAdminPasswords();
+
+    passwords[currentAdminEmail] =
+        newPassword;
+
+    saveAdminPasswords(passwords);
+
+
+    showAlert(
+        "passwordChangeAlert",
+        "Password changed successfully.",
+        "success"
+    );
+
+
+    setTimeout(() => {
+
+        enterAdminDashboard();
+
+    }, 700);
+}
+
+
+function cancelPasswordChange() {
+
+    sessionStorage.removeItem(
+        ADMIN_SESSION_KEY
+    );
+
+    currentAdminEmail = "";
+
+    showAdmin();
+}
+
+
+/* ==========================================================
+   ENTER DASHBOARD
+========================================================== */
+
+function enterAdminDashboard() {
+
+    document.getElementById("passwordChangeView")
+        .classList.add("hidden");
+
+    document.getElementById("adminLoginView")
+        .classList.add("hidden");
+
+    document.getElementById("adminDashboard")
+        .classList.remove("hidden");
+
+    document.getElementById("loggedInAdmin")
+        .textContent =
+        currentAdminEmail;
+
+    loadAdminDashboard();
+
+    window.scrollTo(0,0);
+}
+
+
+/* ==========================================================
+   ADMIN LOGOUT
+========================================================== */
+
+function adminLogout() {
+
+    sessionStorage.removeItem(
+        ADMIN_SESSION_KEY
+    );
+
+    currentAdminEmail = "";
+
+    document.getElementById("adminDashboard")
+        .classList.add("hidden");
+
+    showAdmin();
+}
+
+
+/* ==========================================================
+   ADMIN TABS
+========================================================== */
+
+function openAdminTab(tab, button) {
+
+    document.querySelectorAll(".admin-tab")
+        .forEach(btn =>
+            btn.classList.remove("active")
+        );
+
+    button.classList.add("active");
+
+
+    const tabs = [
+        "adminDashboardTab",
+        "adminResponsesTab",
+        "adminQuestionsTab",
+        "adminAnalysisTab",
+        "adminBrandingTab",
+        "adminExportTab"
+    ];
+
+    tabs.forEach(id => {
+
+        document.getElementById(id)
+            .classList.add("hidden");
+
+    });
+
+
+    if (tab === "dashboard") {
+
+        document.getElementById(
+            "adminDashboardTab"
+        ).classList.remove("hidden");
+
+        loadAdminDashboard();
+    }
+
+
+    if (tab === "responses") {
+
+        document.getElementById(
+            "adminResponsesTab"
+        ).classList.remove("hidden");
+
+        renderResponses();
+    }
+
+
+    if (tab === "questions") {
+
+        document.getElementById(
+            "adminQuestionsTab"
+        ).classList.remove("hidden");
+
+        renderQuestionEditor();
+    }
+
+
+    if (tab === "analysis") {
+
+        document.getElementById(
+            "adminAnalysisTab"
+        ).classList.remove("hidden");
+
+        renderQuestionAnalysis();
+    }
+
+
+    if (tab === "branding") {
+
+        document.getElementById(
+            "adminBrandingTab"
+        ).classList.remove("hidden");
+
+        loadSettingsIntoForm();
+    }
+
+
+    if (tab === "export") {
+
+        document.getElementById(
+            "adminExportTab"
+        ).classList.remove("hidden");
+
+    }
+}
+
+
+/* ==========================================================
+   RENDER QUESTIONS FOR STUDENTS
+========================================================== */
+
+function renderQuestions() {
+
+    const container =
+        document.getElementById(
+            "questionsContainer"
+        );
+
+    container.innerHTML = "";
+
+
+    questions.forEach((q, index) => {
+
+        const div =
+            document.createElement("div");
+
+        div.className = "question";
+
+
+        let optionsHTML = "";
+
+
+        q.options.forEach((option, i) => {
+
+            const letter =
+                String.fromCharCode(65 + i);
+
+
+            optionsHTML += `
+
+                <div class="option">
+
+                    <input
+                        type="radio"
+                        name="question_${q.id}"
+                        id="q${q.id}_${i}"
+                        value="${i}"
+                    >
+
+                    <label for="q${q.id}_${i}">
+
+                        <span class="option-letter">
+                            ${letter}
+                        </span>
+
+                        <span>
+                            ${option}
+                        </span>
+
+                    </label>
+
+                </div>
+
+            `;
+
+        });
+
+
+        div.innerHTML = `
+
+            <div class="question-text">
+
+                <span class="question-number">
+                    ${index + 1}.
+                </span>
+
+                ${q.question}
+
+            </div>
+
+            <div class="options">
+                ${optionsHTML}
+            </div>
+
+        `;
+
+
+        container.appendChild(div);
+
+    });
+
+
+    renderMath();
+}
+
+
+/* ==========================================================
+   KATEX
+========================================================== */
+
+function renderMath() {
+
+    if (typeof renderMathInElement !== "function") {
+        return;
+    }
+
+    renderMathInElement(
+        document.body,
+        {
+            delimiters: [
+                {
+                    left: "$$",
+                    right: "$$",
+                    display: true
+                },
+                {
+                    left: "\\(",
+                    right: "\\)",
+                    display: false
+                },
+                {
+                    left: "$",
+                    right: "$",
+                    display: false
+                }
+            ],
+            throwOnError: false
+        }
+    );
+}
+
+
+/* ==========================================================
+   STUDENT SUBMISSION
+========================================================== */
+
+document.getElementById("assessmentForm")
+.addEventListener(
+    "submit",
+    function(e) {
+
+        e.preventDefault();
+
+        clearAlert("studentAlert");
+
+
+        const surname =
+            document.getElementById("surname")
+            .value
+            .trim();
+
+
+        const firstName =
+            document.getElementById("firstName")
+            .value
+            .trim();
+
+
+        const studentClass =
+            document.getElementById("studentClass")
+            .value;
+
+
+        if (!surname || !firstName) {
+
+            showAlert(
+                "studentAlert",
+                "Please enter both your Surname and First Name.",
+                "error"
+            );
+
+            window.scrollTo({
+                top:0,
+                behavior:"smooth"
+            });
+
+            return;
+        }
+
+
+        if (!studentClass) {
+
+            showAlert(
+                "studentAlert",
+                "Please select your class before submitting.",
+                "error"
+            );
+
+            window.scrollTo({
+                top:0,
+                behavior:"smooth"
+            });
+
+            return;
+        }
+
+
+        const studentKey =
+            normalise(surname) +
+            "|" +
+            normalise(firstName) +
+            "|" +
+            normalise(studentClass);
+
+
+        const previousSubmissions =
+            JSON.parse(
+                localStorage.getItem(
+                    SUBMISSION_KEY
+                ) || "[]"
+            );
+
+
+        if (
+            previousSubmissions.includes(
+                studentKey
+            )
+        ) {
+
+            showAlert(
+                "studentAlert",
+                "This student has already submitted this assessment. Only one submission is allowed per student.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        const answers = {};
+
+        const unanswered = [];
+
+
+        questions.forEach(
+            (q, index) => {
+
+                const selected =
+                    document.querySelector(
+                        `input[name="question_${q.id}"]:checked`
+                    );
+
+
+                if (!selected) {
+
+                    unanswered.push(
+                        index + 1
+                    );
+
+                } else {
+
+                    answers[q.id] =
+                        Number(
+                            selected.value
+                        );
+
+                }
+
+            }
+        );
+
+
+        if (unanswered.length > 0) {
+
+            showAlert(
+                "studentAlert",
+                `You must answer all 20 questions before submitting. Unanswered question(s): ${unanswered.join(", ")}.`,
+                "error"
+            );
+
+            window.scrollTo({
+                top:0,
+                behavior:"smooth"
+            });
+
+            return;
+        }
+
+
+        let score = 0;
+
+
+        const details =
+            questions.map(q => {
+
+                const selected =
+                    answers[q.id];
+
+                const correct =
+                    selected === q.correct;
+
+
+                if (correct) {
+                    score++;
+                }
+
+
+                return {
+
+                    questionId: q.id,
+
+                    selected: selected,
+
+                    correctAnswer:
+                        q.correct,
+
+                    isCorrect:
+                        correct
+
+                };
+
+            });
+
+
+        const percentage =
+            Math.round(
+                (
+                    score /
+                    questions.length
+                ) * 100
+            );
+
+
+        const submission = {
+
+            id:
+                Date.now().toString(),
+
+            timestamp:
+                new Date().toISOString(),
+
+            surname,
+
+            firstName,
+
+            class:
+                studentClass,
+
+            assessment:
+                settings.assessmentTitle,
+
+            answers,
+
+            details,
+
+            score,
+
+            total:
+                questions.length,
+
+            percentage
+
+        };
+
+
+        const responses =
+            JSON.parse(
+                localStorage.getItem(
+                    STORAGE_KEY
+                ) || "[]"
+            );
+
+
+        responses.push(
+            submission
+        );
+
+
+        localStorage.setItem(
+            STORAGE_KEY,
+            JSON.stringify(responses)
+        );
+
+
+        previousSubmissions.push(
+            studentKey
+        );
+
+
+        localStorage.setItem(
+            SUBMISSION_KEY,
+            JSON.stringify(
+                previousSubmissions
+            )
+        );
+
+
+        showResult(
+            submission
+        );
+
+    }
+);
+
+
+/* ==========================================================
+   SHOW RESULT
+========================================================== */
+
+function showResult(submission) {
+
+    document.getElementById("studentView")
+        .classList.add("hidden");
+
+    document.getElementById("resultView")
+        .classList.remove("hidden");
+
+
+    document.querySelector(
+        "#resultView .assessment-title"
+    ).textContent =
+        settings.resultTitle;
+
+
+    document.getElementById(
+        "resultStudent"
+    ).innerHTML =
+        `<strong>${escapeHTML(
+            submission.surname
+        )},
+        ${escapeHTML(
+            submission.firstName
+        )}</strong>
+        &nbsp; | &nbsp;
+        ${escapeHTML(
+            submission.class
+        )}`;
+
+
+    document.getElementById(
+        "scoreDisplay"
+    ).textContent =
+        `${submission.score} / ${submission.total}`;
+
+
+    document.getElementById(
+        "percentageDisplay"
+    ).textContent =
+        `${submission.percentage}%`;
+
+
+    const container =
+        document.getElementById(
+            "resultDetails"
+        );
+
+
+    container.innerHTML = "";
+
+
+    questions.forEach(
+        (q, index) => {
+
+            const detail =
+                submission.details[index];
+
+
+            const studentAnswer =
+                q.options[
+                    detail.selected
+                ];
+
+
+            const correctAnswer =
+                q.options[
+                    q.correct
+                ];
+
+
+            const div =
+                document.createElement(
+                    "div"
+                );
+
+
+            div.className =
+                "result-detail " +
+                (
+                    detail.isCorrect
+                        ? "correct"
+                        : "incorrect"
+                );
+
+
+            div.innerHTML = `
+
+                <strong>
+                    ${index + 1}. ${q.question}
+                </strong>
+
+                <div class="result-answer">
+
+                    Your answer:
+                    <strong>
+                        ${studentAnswer}
+                    </strong>
+
+                </div>
+
+                ${
+                    detail.isCorrect
+
+                    ?
+
+                    `
+                    <div class="result-answer"
+                         style="color:#15803d">
+                        Correct
+                    </div>
+                    `
+
+                    :
+
+                    `
+                    <div class="result-answer"
+                         style="color:#b91c1c">
+
+                        Correct answer:
+                        <strong>
+                            ${correctAnswer}
+                        </strong>
+
+                    </div>
+                    `
+                }
+
+                <div class="explanation">
+
+                    <strong>
+                        Explanation:
+                    </strong><br>
+
+                    ${q.explanation}
+
+                </div>
+
+            `;
+
+
+            container.appendChild(
+                div
+            );
+
+        }
+    );
+
+
+    renderMath();
+
+
+    window.scrollTo({
+        top:0,
+        behavior:"smooth"
+    });
+}
+
+
+/* ==========================================================
+   ADMIN DASHBOARD
+========================================================== */
+
+function loadAdminDashboard() {
+
+    const responses =
+        getResponses();
+
+
+    document.getElementById(
+        "totalSubmissions"
+    ).textContent =
+        responses.length;
+
+
+    if (!responses.length) {
+
+        document.getElementById(
+            "averageScore"
+        ).textContent =
+            "0%";
+
+        document.getElementById(
+            "highestScore"
+        ).textContent =
+            "0%";
+
+        document.getElementById(
+            "lowestScore"
+        ).textContent =
+            "0%";
+
+    } else {
+
+        const percentages =
+            responses.map(
+                r => r.percentage
+            );
+
+
+        const average =
+            Math.round(
+                percentages.reduce(
+                    (a,b) => a + b,
+                    0
+                ) /
+                percentages.length
+            );
+
+
+        document.getElementById(
+            "averageScore"
+        ).textContent =
+            average + "%";
+
+
+        document.getElementById(
+            "highestScore"
+        ).textContent =
+            Math.max(
+                ...percentages
+            ) + "%";
+
+
+        document.getElementById(
+            "lowestScore"
+        ).textContent =
+            Math.min(
+                ...percentages
+            ) + "%";
+
+    }
+
+
+    renderClassSummary();
+}
+
+
+/* ==========================================================
+   CLASS SUMMARY
+========================================================== */
+
+function renderClassSummary() {
+
+    const responses =
+        getResponses();
+
+
+    const classes = [
+        "Year 10A",
+        "Year 10B",
+        "Year 10C"
+    ];
+
+
+    let html = `
+
+        <div class="table-wrap">
+
+        <table>
+
+        <thead>
+
+            <tr>
+                <th>Class</th>
+                <th>Submissions</th>
+                <th>Average</th>
+                <th>Highest</th>
+                <th>Lowest</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+    `;
+
+
+    classes.forEach(
+        cls => {
+
+            const data =
+                responses.filter(
+                    r => r.class === cls
+                );
+
+
+            if (!data.length) {
+
+                html += `
+
+                    <tr>
+
+                        <td>${cls}</td>
+                        <td>0</td>
+                        <td>—</td>
+                        <td>—</td>
+                        <td>—</td>
+
+                    </tr>
+
+                `;
+
+                return;
+            }
+
+
+            const scores =
+                data.map(
+                    r => r.percentage
+                );
+
+
+            const average =
+                Math.round(
+                    scores.reduce(
+                        (a,b) => a+b,
+                        0
+                    ) /
+                    scores.length
+                );
+
+
+            html += `
+
+                <tr>
+
+                    <td>
+                        <strong>
+                            ${cls}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${data.length}
+                    </td>
+
+                    <td>
+                        ${average}%
+                    </td>
+
+                    <td>
+                        ${Math.max(
+                            ...scores
+                        )}%
+                    </td>
+
+                    <td>
+                        ${Math.min(
+                            ...scores
+                        )}%
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+    );
+
+
+    html += `
+
+        </tbody>
+
+        </table>
+
+        </div>
+
+    `;
+
+
+    document.getElementById(
+        "classSummary"
+    ).innerHTML = html;
+}
+
+
+/* ==========================================================
+   RESPONSES
+========================================================== */
+
+function renderResponses() {
+
+    const responses =
+        getResponses();
+
+
+    const container =
+        document.getElementById(
+            "responsesTable"
+        );
+
+
+    if (!responses.length) {
+
+        container.innerHTML = `
+
+            <div class="alert alert-warning">
+
+                No student responses have been
+                submitted yet.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    let html = `
+
+        <div class="table-wrap">
+
+        <table>
+
+        <thead>
+
+        <tr>
+
+            <th>Timestamp</th>
+            <th>Surname</th>
+            <th>First Name</th>
+            <th>Class</th>
+            <th>Score</th>
+            <th>Percentage</th>
+
+        </tr>
+
+        </thead>
+
+        <tbody>
+
+    `;
+
+
+    responses.forEach(
+        r => {
+
+            const date =
+                new Date(
+                    r.timestamp
+                ).toLocaleString();
+
+
+            html += `
+
+                <tr>
+
+                    <td>
+                        ${escapeHTML(date)}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${escapeHTML(
+                                r.surname
+                            )}
+                        </strong>
+                    </td>
+
+                    <td>
+                        ${escapeHTML(
+                            r.firstName
+                        )}
+                    </td>
+
+                    <td>
+                        ${escapeHTML(
+                            r.class
+                        )}
+                    </td>
+
+                    <td>
+                        ${r.score}/${r.total}
+                    </td>
+
+                    <td>
+                        <strong>
+                            ${r.percentage}%
+                        </strong>
+                    </td>
+
+                </tr>
+
+            `;
+
+        }
+    );
+
+
+    html += `
+
+        </tbody>
+
+        </table>
+
+        </div>
+
+    `;
+
+
+    container.innerHTML =
+        html;
+}
+
+
+/* ==========================================================
+   QUESTION EDITOR
+========================================================== */
+
+function renderQuestionEditor() {
+
+    const container =
+        document.getElementById(
+            "questionEditor"
+        );
+
+
+    let html = "";
+
+
+    questions.forEach(
+        (q, index) => {
+
+            html += `
+
+                <div class="editor-question">
+
+                    <div class="editor-question-header">
+
+                        <div class="editor-question-title">
+                            Question ${index + 1}
+                        </div>
+
+                        <div style="font-size:12px;color:#64748b;">
+                            ID: ${q.id}
+                        </div>
+
+                    </div>
+
+
+                    <div class="editor-grid">
+
+
+                        <div class="setting">
+
+                            <label>
+                                Topic
+                            </label>
+
+                            <input
+                                id="edit_topic_${q.id}"
+                                value="${escapeAttribute(q.topic)}"
+                            >
+
+                        </div>
+
+
+                        <div class="setting">
+
+                            <label>
+                                Correct Answer
+                            </label>
+
+                            <select
+                                id="edit_correct_${q.id}"
+                            >
+
+                                <option value="0"
+                                    ${q.correct === 0 ? "selected" : ""}>
+                                    A
+                                </option>
+
+                                <option value="1"
+                                    ${q.correct === 1 ? "selected" : ""}>
+                                    B
+                                </option>
+
+                                <option value="2"
+                                    ${q.correct === 2 ? "selected" : ""}>
+                                    C
+                                </option>
+
+                                <option value="3"
+                                    ${q.correct === 3 ? "selected" : ""}>
+                                    D
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="setting editor-full">
+
+                            <label>
+                                Question
+                            </label>
+
+                            <textarea
+                                id="edit_question_${q.id}"
+                                rows="3"
+                            >${escapeHTML(q.question)}</textarea>
+
+                        </div>
+
+
+                        <div class="setting">
+
+                            <label>
+                                Option A
+                            </label>
+
+                            <div class="editor-option">
+
+                                <div class="editor-option-letter">
+                                    A
+                                </div>
+
+                                <input
+                                    id="edit_option_${q.id}_0"
+                                    value="${escapeAttribute(q.options[0])}"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="setting">
+
+                            <label>
+                                Option B
+                            </label>
+
+                            <div class="editor-option">
+
+                                <div class="editor-option-letter">
+                                    B
+                                </div>
+
+                                <input
+                                    id="edit_option_${q.id}_1"
+                                    value="${escapeAttribute(q.options[1])}"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="setting">
+
+                            <label>
+                                Option C
+                            </label>
+
+                            <div class="editor-option">
+
+                                <div class="editor-option-letter">
+                                    C
+                                </div>
+
+                                <input
+                                    id="edit_option_${q.id}_2"
+                                    value="${escapeAttribute(q.options[2])}"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="setting">
+
+                            <label>
+                                Option D
+                            </label>
+
+                            <div class="editor-option">
+
+                                <div class="editor-option-letter">
+                                    D
+                                </div>
+
+                                <input
+                                    id="edit_option_${q.id}_3"
+                                    value="${escapeAttribute(q.options[3])}"
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="setting editor-full">
+
+                            <label>
+                                Explanation
+                            </label>
+
+                            <textarea
+                                id="edit_explanation_${q.id}"
+                                rows="4"
+                            >${escapeHTML(q.explanation)}</textarea>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+    );
+
+
+    container.innerHTML =
+        html;
+
+    renderMath();
+}
+
+
+/* ==========================================================
+   SAVE QUESTIONS
+========================================================== */
+
+function saveQuestions() {
+
+    const updatedQuestions =
+        questions.map(
+            q => {
+
+                const topic =
+                    document.getElementById(
+                        `edit_topic_${q.id}`
+                    ).value.trim();
+
+
+                const question =
+                    document.getElementById(
+                        `edit_question_${q.id}`
+                    ).value.trim();
+
+
+                const options = [
+                    document.getElementById(
+                        `edit_option_${q.id}_0`
+                    ).value.trim(),
+
+                    document.getElementById(
+                        `edit_option_${q.id}_1`
+                    ).value.trim(),
+
+                    document.getElementById(
+                        `edit_option_${q.id}_2`
+                    ).value.trim(),
+
+                    document.getElementById(
+                        `edit_option_${q.id}_3`
+                    ).value.trim()
+                ];
+
+
+                const correct =
+                    Number(
+                        document.getElementById(
+                            `edit_correct_${q.id}`
+                        ).value
+                    );
+
+
+                const explanation =
+                    document.getElementById(
+                        `edit_explanation_${q.id}`
+                    ).value.trim();
+
+
+                if (
+                    !topic ||
+                    !question ||
+                    options.some(
+                        option => !option
+                    ) ||
+                    !explanation
+                ) {
+
+                    throw new Error(
+                        `Question ${q.id} contains an empty field.`
+                    );
+
+                }
+
+
+                return {
+
+                    id: q.id,
+
+                    topic,
+
+                    question,
+
+                    options,
+
+                    correct,
+
+                    explanation
+
+                };
+
+            }
+        );
+
+
+    try {
+
+        questions =
+            updatedQuestions;
+
+
+        localStorage.setItem(
+            QUESTIONS_KEY,
+            JSON.stringify(
+                questions
+            )
+        );
+
+
+        renderQuestions();
+
+
+        const message =
+            document.getElementById(
+                "questionSaveMessage"
+            );
+
+
+        message.innerHTML =
+            `<span style="color:#15803d;font-weight:700;">
+                Questions saved successfully.
+             </span>`;
+
+
+        setTimeout(
+            () => {
+                message.innerHTML = "";
+            },
+            3000
+        );
+
+
+        window.scrollTo({
+            top:0,
+            behavior:"smooth"
+        });
+
+
+    } catch (error) {
+
+        alert(
+            error.message
+        );
+
+    }
+}
+
+
+/* ==========================================================
+   RESET QUESTIONS
+========================================================== */
+
+function resetQuestions() {
+
+    const confirmation =
+        confirm(
+            "Restore all 20 questions to the original question bank?"
+        );
+
+
+    if (!confirmation) {
+        return;
+    }
+
+
+    questions =
+        clone(
+            originalQuestions
+        );
+
+
+    localStorage.setItem(
+        QUESTIONS_KEY,
+        JSON.stringify(
+            questions
+        )
+    );
+
+
+    renderQuestionEditor();
+
+    renderQuestions();
+
+
+    document.getElementById(
+        "questionSaveMessage"
+    ).innerHTML =
+        `<span style="color:#15803d;font-weight:700;">
+            Original questions restored.
+         </span>`;
+
+}
+
+
+/* ==========================================================
+   QUESTION ANALYSIS
+========================================================== */
+
+function renderQuestionAnalysis() {
+
+    const responses =
+        getResponses();
+
+
+    const container =
+        document.getElementById(
+            "questionAnalysis"
+        );
+
+
+    if (!responses.length) {
+
+        container.innerHTML = `
+
+            <div class="alert alert-warning">
+
+                Question analysis will appear after
+                students submit responses.
+
+            </div>
+
+        `;
+
+        return;
+    }
+
+
+    let html = "";
+
+
+    questions.forEach(
+        (q, index) => {
+
+            let correct = 0;
+
+            const distribution =
+                [0,0,0,0];
+
+
+            responses.forEach(
+                r => {
+
+                    const answer =
+                        r.answers[
+                            q.id
+                        ];
+
+
+                    if (
+                        answer !== undefined
+                    ) {
+
+                        distribution[
+                            answer
+                        ]++;
+
+
+                        if (
+                            answer === q.correct
+                        ) {
+
+                            correct++;
+
+                        }
+
+                    }
+
+                }
+            );
+
+
+            const rate =
+                Math.round(
+                    (
+                        correct /
+                        responses.length
+                    ) * 100
+                );
+
+
+            html += `
+
+                <div class="question-analysis">
+
+                    <strong>
+                        Question ${index + 1}
+                    </strong>
+
+                    <div style="margin-top:8px;">
+                        ${q.question}
+                    </div>
+
+                    <div style="margin-top:10px;">
+
+                        Correct:
+                        <strong>
+                            ${correct}/${responses.length}
+                        </strong>
+
+                        &nbsp; | &nbsp;
+
+                        Success Rate:
+                        <strong>
+                            ${rate}%
+                        </strong>
+
+                    </div>
+
+                    <div class="progress">
+
+                        <div
+                            class="progress-inner"
+                            style="width:${rate}%">
+                        </div>
+
+                    </div>
+
+                    <div style="margin-top:10px;font-size:13px;">
+
+                        A: ${distribution[0]}
+                        &nbsp;&nbsp;
+
+                        B: ${distribution[1]}
+                        &nbsp;&nbsp;
+
+                        C: ${distribution[2]}
+                        &nbsp;&nbsp;
+
+                        D: ${distribution[3]}
+
+                    </div>
+
+                </div>
+
+            `;
+
+        }
+    );
+
+
+    container.innerHTML =
+        html;
+
+
+    renderMath();
+}
+
+
+/* ==========================================================
+   SETTINGS FORM
+========================================================== */
+
+function loadSettingsIntoForm() {
+
+    document.getElementById(
+        "settingSchoolName"
+    ).value =
+        settings.schoolName;
+
+
+    document.getElementById(
+        "settingPlatformTitle"
+    ).value =
+        settings.platformTitle;
+
+
+    document.getElementById(
+        "settingAssessmentTitle"
+    ).value =
+        settings.assessmentTitle;
+
+
+    document.getElementById(
+        "settingInstructions"
+    ).value =
+        settings.instructions;
+
+
+    document.getElementById(
+        "primaryColor"
+    ).value =
+        settings.primaryColor;
+
+
+    document.getElementById(
+        "secondaryColor"
+    ).value =
+        settings.secondaryColor;
+
+
+    document.getElementById(
+        "settingSubmitButton"
+    ).value =
+        settings.submitButtonText;
+
+
+    document.getElementById(
+        "settingResultTitle"
+    ).value =
+        settings.resultTitle;
+
+
+    document.getElementById(
+        "settingResultMessage"
+    ).value =
+        settings.resultMessage;
+}
+
+
+/* ==========================================================
+   LOGO
+========================================================== */
+
+document.getElementById(
+    "logoUpload"
+).addEventListener(
+    "change",
+    function(e) {
+
+        const file =
+            e.target.files[0];
+
+
+        if (!file) {
+            return;
+        }
+
+
+        const reader =
+            new FileReader();
+
+
+        reader.onload =
+            function(event) {
+
+                settings.logo =
+                    event.target.result;
+
+
+                updateLogo();
+
+
+                showAlert(
+                    "settingsMessage",
+                    "Logo loaded successfully. Click Save Settings to keep it.",
+                    "success"
+                );
+
+            };
+
+
+        reader.readAsDataURL(
+            file
+        );
+
+    }
+);
+
+
+/* ==========================================================
+   SAVE SETTINGS
+========================================================== */
+
+function saveSettings() {
+
+    settings.schoolName =
+        document.getElementById(
+            "settingSchoolName"
+        ).value.trim()
+        ||
+        "START-RITE SCHOOLS";
+
+
+    settings.platformTitle =
+        document.getElementById(
+            "settingPlatformTitle"
+        ).value.trim()
+        ||
+        "MATHEMATICS ASSESSMENT";
+
+
+    settings.assessmentTitle =
+        document.getElementById(
+            "settingAssessmentTitle"
+        ).value.trim()
+        ||
+        "FRACTIONS, DECIMALS AND PERCENTAGES I";
+
+
+    settings.instructions =
+        document.getElementById(
+            "settingInstructions"
+        ).value.trim();
+
+
+    settings.primaryColor =
+        document.getElementById(
+            "primaryColor"
+        ).value;
+
+
+    settings.secondaryColor =
+        document.getElementById(
+            "secondaryColor"
+        ).value;
+
+
+    settings.submitButtonText =
+        document.getElementById(
+            "settingSubmitButton"
+        ).value.trim()
+        ||
+        "Submit Mathematics Assessment";
+
+
+    settings.resultTitle =
+        document.getElementById(
+            "settingResultTitle"
+        ).value.trim()
+        ||
+        "Assessment Results";
+
+
+    settings.resultMessage =
+        document.getElementById(
+            "settingResultMessage"
+        ).value.trim();
+
+
+    localStorage.setItem(
+        SETTINGS_KEY,
+        JSON.stringify(
+            settings
+        )
+    );
+
+
+    applySettings();
+
+
+    showAlert(
+        "settingsMessage",
+        "Settings saved successfully.",
+        "success"
+    );
+}
+
+
+/* ==========================================================
+   APPLY SETTINGS
+========================================================== */
+
+function applySettings() {
+
+    document.getElementById(
+        "schoolNameDisplay"
+    ).textContent =
+        settings.schoolName;
+
+
+    document.getElementById(
+        "platformTitleDisplay"
+    ).textContent =
+        settings.platformTitle;
+
+
+    document.getElementById(
+        "studentAssessmentTitle"
+    ).textContent =
+        settings.assessmentTitle;
+
+
+    document.getElementById(
+        "studentInstructions"
+    ).textContent =
+        settings.instructions;
+
+
+    const submitButton =
+        document.querySelector(
+            "#assessmentForm button[type='submit']"
+        );
+
+
+    if (submitButton) {
+
+        submitButton.textContent =
+            settings.submitButtonText;
+
+    }
+
+
+    document.documentElement.style
+        .setProperty(
+            "--blue",
+            settings.primaryColor
+        );
+
+
+    document.documentElement.style
+        .setProperty(
+            "--red",
+            settings.secondaryColor
+        );
+
+
+    updateLogo();
+}
+
+
+/* ==========================================================
+   UPDATE LOGO
+========================================================== */
+
+function updateLogo() {
+
+    const wrapper =
+        document.getElementById(
+            "headerLogo"
+        );
+
+
+    if (settings.logo) {
+
+        wrapper.innerHTML =
+            `<img src="${settings.logo}"
+                   alt="School Logo">`;
+
+    } else {
+
+        wrapper.innerHTML =
+            `<span class="logo-placeholder">
+                SRS
+             </span>`;
+
+    }
+}
+
+
+/* ==========================================================
+   EXPORT CSV
+========================================================== */
+
+function exportCSV() {
+
+    const responses =
+        getResponses();
+
+
+    if (!responses.length) {
+
+        alert(
+            "There are no student responses to export."
+        );
+
+        return;
+    }
+
+
+    const headers = [
+
+        "Timestamp",
+        "Surname",
+        "First Name",
+        "Class",
+
+        ...questions.map(
+            (_,i) => `Q${i+1}`
+        ),
+
+        ...questions.map(
+            (_,i) => `Q${i+1} Score`
+        ),
+
+        "Total Score",
+        "Percentage"
+
+    ];
+
+
+    const rows =
+        responses.map(
+            r => {
+
+                const answers =
+                    questions.map(
+                        q => {
+
+                            const selected =
+                                r.answers[
+                                    q.id
+                                ];
+
+                            return optionLetter(
+                                selected
+                            );
+
+                        }
+                    );
+
+
+                const questionScores =
+                    questions.map(
+                        q => {
+
+                            return (
+                                r.answers[q.id] ===
+                                q.correct
+                            )
+                            ? 1
+                            : 0;
+
+                        }
+                    );
+
+
+                return [
+
+                    r.timestamp,
+
+                    r.surname,
+
+                    r.firstName,
+
+                    r.class,
+
+                    ...answers,
+
+                    ...questionScores,
+
+                    `${r.score}/${r.total}`,
+
+                    r.percentage + "%"
+
+                ];
+
+            }
+        );
+
+
+    const csv =
+        [
+            headers,
+            ...rows
+        ]
+        .map(
+            row =>
+                row
+                .map(csvEscape)
+                .join(",")
+        )
+        .join("\n");
+
+
+    const blob =
+        new Blob(
+            [csv],
+            {
+                type:
+                    "text/csv;charset=utf-8;"
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const a =
+        document.createElement(
+            "a"
+        );
+
+
+    a.href = url;
+
+
+    a.download =
+        "Start-Rite_Fractions_Decimals_Percentages_Responses.csv";
+
+
+    a.click();
+
+
+    URL.revokeObjectURL(
+        url
+    );
+}
+
+
+/* ==========================================================
+   CLEAR RESPONSES
+========================================================== */
+
+function clearResponses() {
+
+    const confirmation =
+        confirm(
+            "Are you sure you want to permanently delete ALL student responses from this browser?"
+        );
+
+
+    if (!confirmation) {
+        return;
+    }
+
+
+    localStorage.removeItem(
+        STORAGE_KEY
+    );
+
+
+    localStorage.removeItem(
+        SUBMISSION_KEY
+    );
+
+
+    loadAdminDashboard();
+
+    renderResponses();
+
+
+    alert(
+        "All local responses have been cleared."
+    );
+}
+
+
+/* ==========================================================
+   HELPERS
+========================================================== */
+
+function getResponses() {
+
+    try {
+
+        return JSON.parse(
+            localStorage.getItem(
+                STORAGE_KEY
+            ) || "[]"
+        );
+
+    } catch (error) {
+
+        return [];
+
+    }
+}
+
+
+function normalise(value) {
+
+    return value
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase();
+}
+
+
+function optionLetter(index) {
+
+    if (index === undefined ||
+        index === null ||
+        index === "") {
+
+        return "";
+    }
+
+
+    return String.fromCharCode(
+        65 + Number(index)
+    );
+}
+
+
+function showAlert(
+    elementId,
+    message,
+    type
+) {
+
+    const el =
+        document.getElementById(
+            elementId
+        );
+
+
+    if (!el) {
+        return;
+    }
+
+
+    el.innerHTML =
+        `<div class="alert alert-${type}">
+            ${escapeHTML(message)}
+         </div>`;
+}
+
+
+function clearAlert(elementId) {
+
+    const el =
+        document.getElementById(
+            elementId
+        );
+
+
+    if (el) {
+        el.innerHTML = "";
+    }
+}
+
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+
+function escapeAttribute(value) {
+
+    return escapeHTML(value);
+}
+
+
+function csvEscape(value) {
+
+    const str =
+        String(
+            value ?? ""
+        );
+
+
+    return `"${str.replace(
+        /"/g,
+        '""'
+    )}"`;
+}
+
+
+/* ==========================================================
+   INITIALISE
+========================================================== */
+
+applySettings();
+
+renderQuestions();
+
+
+/* ==========================================================
+   RESTORE ADMIN SESSION
+========================================================== */
+
+const savedAdmin =
+    sessionStorage.getItem(
+        ADMIN_SESSION_KEY
+    );
+
+
+if (
+    savedAdmin &&
+    ADMIN_EMAILS.includes(
+        savedAdmin
+    )
+) {
+
+    currentAdminEmail =
+        savedAdmin;
+
+
+    /*
+       If the saved session is still using
+       the default password, force password
+       change again.
+    */
+
+    if (
+        isDefaultPassword(
+            currentAdminEmail
+        )
+    ) {
+
+        showAdmin();
+
+        document.getElementById(
+            "adminLoginView"
+        ).classList.add("hidden");
+
+
+        document.getElementById(
+            "passwordChangeView"
+        ).classList.remove("hidden");
+
+    } else {
+
+        document.getElementById(
+            "studentView"
+        ).classList.add("hidden");
+
+
+        document.getElementById(
+            "adminView"
+        ).classList.remove("hidden");
+
+
+        enterAdminDashboard();
+
+    }
+}
+
+</script>
+
+</body>
+</html>
